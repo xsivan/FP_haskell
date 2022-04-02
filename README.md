@@ -1,4 +1,4 @@
 # FP_haskell
 
 # Tím
-# Bc. Lukaš Lobl
+- Bc. Lukaš Lobl
