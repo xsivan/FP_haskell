@@ -1,5 +1,5 @@
 # FP_haskell
-Skupionové zadanie z predmetu Funkciaonálne Programovanie
+Skupinové zadanie z predmetu Funkciaonálne Programovanie
 
 # Tím
 - Bc. Lukáš Löbl
