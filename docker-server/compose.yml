@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+    haskell:
+        build: .
+        entrypoint: ["/opt/app/entrypoint.sh"]
+        stdin_open: true
+        tty: true
+        volumes:
+            - ./entrypoint.sh:/opt/app/entrypoint.sh
+            - ../src:/opt/app/src
+            - ../app.cabal:/opt/app/app.cabal
+            - ../CHANGELOG.md:/opt/app/CHANGELOG.MD
+            - ../LICENSE:/opt/app/LICENSE
+        working_dir: "/opt/app"
+

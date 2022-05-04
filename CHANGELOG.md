@@ -5,12 +5,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Cabal config
 - Changelog
-- Dockerfile config
-- DockerCompose config
+- Docker setup via docker compose
 - Gitignore
 ### Changed
 - Renamed main code folder structure from app to src
-- Updated content of Readme file
+- Updated content of Readme file, include instructions for docker setup
 
 ## [0.0.1] - 2022-04-02
 ### Added
