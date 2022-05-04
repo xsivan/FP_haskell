@@ -14,7 +14,7 @@ toWords s list = filter (\w -> w `notElem` list) (words s)
 removeStopWords :: IO [String]
 removeStopWords = do  
             putStrLn "nacitaj file"   
-            handle <- readFile "app/stopwords.txt" 
+            handle <- readFile "src/stopwords.txt"
             file <- getLine
             hndl <- readFile file
             return (toWords hndl (lines handle))
