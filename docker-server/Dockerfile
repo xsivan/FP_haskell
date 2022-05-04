@@ -4,4 +4,5 @@ WORKDIR /opt/app
 
 # Core OS packages installation
 RUN apt-get update && apt-get install -y
+RUN apt-get install vim -y
 RUN cabal update
