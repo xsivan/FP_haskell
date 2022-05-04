@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+    haskell-server:
+        build: .
+        entrypoint: ["/opt/app/DockerEntrypoint.sh"]
+        stdin_open: true
+        tty: true
+        volumes:
+            - ./src:/opt/app/src
+            - ./app.cabal:/opt/app/app.cabal
+            - ./CHANGELOG.md:/opt/app/CHANGELOG.MD
+            - ./LICENSE:/opt/app/LICENSE
+            - ./DockerEntrypoint.sh:/opt/app/DockerEntrypoint.sh
+        working_dir: "/opt/app"
