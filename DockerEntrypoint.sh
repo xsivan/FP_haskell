@@ -11,4 +11,4 @@ echoTitle "Starting build of cabal dependencies" &&
 cabal build --only-dependencies -j4 &&
 echoTitle "Starting cabal installation" &&
 cabal install --overwrite-policy=always &&
-ghci
+cabal v2-repl
