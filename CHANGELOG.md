@@ -10,9 +10,7 @@ All notable changes to this project will be documented in this file.
 - Gitignore
 ### Changed
 - Renamed main code folder structure from app to src
-- Cabal config - minor structural changes
-- Retrospective filled changelog
-### Removed
+- Updated content of Readme file
 
 ## [0.0.1] - 2022-04-02
 ### Added
