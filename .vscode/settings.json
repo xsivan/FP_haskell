@@ -1,3 +1,6 @@
 {
-    "files.useExperimentalFileWatcher": true
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "files.autoSave":"afterDelay",
+    "haskell.manageHLS": "PATH"
 }
