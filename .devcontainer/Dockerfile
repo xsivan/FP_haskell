@@ -1,5 +1,4 @@
 FROM haskell:9.2.2-slim-buster
-MAINTAINER Palo
 WORKDIR /opt/app
 
 # Core OS packages installation
