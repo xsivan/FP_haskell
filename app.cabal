@@ -7,7 +7,6 @@ bug-reports: https://github.com/xsivan/FP_haskell/issues
 license: MIT
 license-file: LICENSE
 author: Luxao, Svidran, Ivan
-maintainer: 74666305+luxao@users.noreply.github.com
 extra-source-files: CHANGELOG.md
 
 executable app
