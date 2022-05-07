@@ -1,0 +1,17 @@
+{  
+    "dockerComposeFile": ["./docker-compose.yml"],
+    "extensions": [
+		"haskell.haskell",
+		"justusadam.language-haskell",
+		"isudox.vscode-jetbrains-keybindings",
+		"Gruntfuggly.todo-tree"
+	],
+    "features": {
+        "haskell.manageHLS": "GHCup"
+    },
+    "forwardPorts": [4205],
+    "postStartCommand": "bash -c 'cabal build --only-dependencies -j4 && cabal install --overwrite-policy=always && echo Done!'",
+    "service": "haskell",
+    "workspaceFolder": "/opt/app",
+    "shutdownAction": "stopCompose"
+  }
