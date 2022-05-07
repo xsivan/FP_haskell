@@ -3,8 +3,7 @@
     "extensions": [
 		"haskell.haskell",
 		"justusadam.language-haskell",
-		"isudox.vscode-jetbrains-keybindings",
-		"Gruntfuggly.todo-tree"
+		"isudox.vscode-jetbrains-keybindings"
 	],
     "features": {
         "haskell.manageHLS": "GHCup"
