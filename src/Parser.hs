@@ -1,22 +1,53 @@
 module Parser(main, parseFiles) where
-    import System.Directory
-    import System.IO
+    import System.Directory (createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
+    import System.IO (putStrLn)
     
     main :: IO ()
     main = return ()
 
-    parseFile :: String -> String -> IO ()
-    parseFile src dest = 
-        putStrLn "Called parse file"
+    -- TODO remove me later 
+    test :: IO ()
+    test = parseFiles "/opt/app/data/pages/" "/opt/app/data/parse"
+
+    createDir' :: FilePath -> IO ()
+    createDir' path = do
+        exist <- doesDirectoryExist path
+        if not exist then createDirectory path else return ()
+
+    hasSuffix' :: String -> String -> Bool
+    hasSuffix' [] [] = True
+    hasSuffix' [] suffix = False
+    hasSuffix' text [] = True
+    hasSuffix' text suffix = if last text == last suffix then hasSuffix' (init text) (init suffix) else False
+
+    isFileHtml' :: String -> Bool
+    isFileHtml' path = hasSuffix' path ".html"
+
+    parseFile' :: FilePath -> FilePath -> IO ()
+    parseFile' src dest = 
+        putStrLn src
         -- Parse name from file
         -- Save into dest + fileName some rng words for now
 
-    parseFiles :: String -> String -> IO ()
-    parseFiles src dest = 
-        putStrLn "Called parse files"
-        -- Check if exist source location, if no exit with error message
-        -- Check if exist target destination, if no create it
-            -- if creation fails exit with error message
-        -- Loop html files in source location, if there is no file exit with message
-            -- Per file call parseFile func
-            -- Try to implement progress-er into console, ideal with content update instead of append
+    parseFiles :: FilePath -> FilePath -> IO ()
+    parseFiles src dest = do
+        validateDir' src "Source location doesnt exist!"
+        createDir' dest
+        files <-filter isFileHtml' `fmap` getDirectoryContents src
+        setCurrentDirectory src
+        parseFiles' files dest 0 (length files)
+
+    parseFiles' :: [String] -> String -> Int -> Int -> IO()
+    parseFiles' files dest iteration count = 
+        if iteration >= count 
+            then putStr ("\nParsing completed!\n\n")
+        else do
+            let iterationNumber = iteration + 1
+            putStr ("Parsing " ++ show iterationNumber ++ " file of " ++ show count ++ "")
+            parseFile' (head files) dest
+            parseFiles' (tail files) dest iterationNumber count
+
+    validateDir' :: FilePath -> String -> IO()
+    validateDir' path errorMessage = do 
+        exist <- doesDirectoryExist path
+        if not exist then error errorMessage else return ()
