@@ -1,10 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.1.1] - 2022-05-XX
+## [0.1.1] - 2022-05-07
 ### Added
-- Parser executable with functionality to parse words from web file or directory with multiple web files 
-### Chahnged
+- Parser executable with not fully implemented yet functionality to parse words from web files in directory. For now is implemented
+  - Automatic creation of dest directory
+  - Main loop via html files of source directory with process logs
+  - Creation of dest file with some dummy content
+### Changed
 - Dummy input data for parseExample.txt file
 
 ## [0.1.0] - 2022-05-06

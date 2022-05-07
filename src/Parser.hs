@@ -1,13 +1,9 @@
 module Parser(main, parseFiles) where
-    import System.Directory (createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
+    import System.Directory (createDirectory, doesFileExist, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
     import System.IO (putStrLn)
     
     main :: IO ()
-    main = return ()
-
-    -- TODO remove me later 
-    test :: IO ()
-    test = parseFiles "/opt/app/data/pages/" "/opt/app/data/parse"
+    main = parseFiles "/opt/app/data/pages/" "/opt/app/data/parse"
 
     createDir' :: FilePath -> IO ()
     createDir' path = do
@@ -24,10 +20,9 @@ module Parser(main, parseFiles) where
     isFileHtml' path = hasSuffix' path ".html"
 
     parseFile' :: FilePath -> FilePath -> IO ()
-    parseFile' src dest = 
-        putStrLn src
-        -- Parse name from file
-        -- Save into dest + fileName some rng words for now
+    parseFile' fileName dest = do
+        -- TODO fill file with real words
+        writeFile (dest ++ "/" ++ fileName) "something"
 
     parseFiles :: FilePath -> FilePath -> IO ()
     parseFiles src dest = do
@@ -43,8 +38,9 @@ module Parser(main, parseFiles) where
             then putStr ("\nParsing completed!\n\n")
         else do
             let iterationNumber = iteration + 1
-            putStr ("Parsing " ++ show iterationNumber ++ " file of " ++ show count ++ "")
-            parseFile' (head files) dest
+            let fileName = head files
+            putStr ("Parsing " ++ show iterationNumber ++ ". file of total " ++ show count ++ " - " ++ fileName ++ "\n")
+            parseFile' fileName dest
             parseFiles' (tail files) dest iterationNumber count
 
     validateDir' :: FilePath -> String -> IO()
