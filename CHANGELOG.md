@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
+[0.1.1]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.0.2...0.1.0
 [0.0.2]: https://github.com/xsivan/FP_haskell/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/xsivan/FP_haskell/compare/0.0.0...0.0.1

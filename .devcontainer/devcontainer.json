@@ -10,8 +10,7 @@
         "haskell.manageHLS": "GHCup"
     },
     "forwardPorts": [4205],
-    "postStartCommand": "bash -c 'cabal build --only-dependencies -j4 && cabal install --overwrite-policy=always && echo Done!'",
     "service": "haskell",
-    "workspaceFolder": "/opt/app",
-    "shutdownAction": "stopCompose"
+    "shutdownAction": "stopCompose",
+    "workspaceFolder": "/opt/app"
   }
