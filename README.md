@@ -5,8 +5,8 @@
  - Haskell environment setup was fully automatized into docker via VS code extension named Remote Containers. Gguide how use this automatization is [here](./.devcontainer/README.md)
 
 # Cabal cheatsheet
-- Load project modules `cabal v2-repl`
-  - After code changes you need to quit `:q` and then start it again
+- Load project modules `cabal v2-repl <module, can be empty if only one is defined>`
+  - After code changes you need to reload module with `:r`
 - Dependencies install `cabal build --only-dependencies -j4` 
 - Apply changes (flags) to modules `cabal install --overwrite-policy=always` e.q. after dependencies change
 
