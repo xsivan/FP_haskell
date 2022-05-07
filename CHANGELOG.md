@@ -1,15 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2022-05-XX
+### Added
+- Parser executable with functionality to parse words from web file or directory with multiple web files 
+### Chahnged
+- Dummy input data for parseExample.txt file
+
 ## [0.1.0] - 2022-05-06
-- Project is setup is now fully completed
 ### Added
 - VS Code remote containers setup which includes setup of haskell environment & VS code extensions to correctly work with haskell
 - Real input data
 ### Changed
 - Readme file
-### Removed
-- Dummy input data
 
 ## [0.0.2] - 2022-05-04
 ### Added
