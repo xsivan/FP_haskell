@@ -23,3 +23,6 @@ RUN ghcup config set gpg-setting GPGStrict
 
 # Clean up
 RUN apt-get autoremove -y && apt-get clean -y
+
+# Cabal package list
+RUN cabal update
