@@ -116,6 +116,14 @@ module Parser(main, parseFiles) where
         where startIndex = indexOfDBS' html startTag 0
               endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
 
+    -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
+    removePairTags' :: DBS.ByteString -> [(DBS.ByteString , DBS.ByteString)] -> DBS.ByteString
+    removePairTags' html tags
+        | DF.null tags = html
+        | otherwise = removePairTags' (removePairTag' html (fst tag) (snd tag)) (tail tags)
+
+        where tag = head tags
+
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
     removeSubStrDBS' text startIndex endIndex = DBS.concat [subStrDBS' text 0 startIndex, subStrDBS' text endIndex (DBS.length text)]
