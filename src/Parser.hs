@@ -4,7 +4,6 @@ module Parser(main, parseFiles) where
     import qualified Data.Foldable as DF(length)
     import qualified Data.List as DL(filter, init, isSuffixOf, last, tail)
     import qualified Data.Maybe as DM (fromJust)
-    import qualified GHC.Base as GB(fmap)
     import qualified System.Directory as SD(createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
     import qualified System.IO as SIO(putStrLn)
     import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText) -- TODO clean later
@@ -26,7 +25,7 @@ module Parser(main, parseFiles) where
     parseFiles src dest = do
         validateDir' src "Source location doesnt exist!"
         createDir' dest
-        files <-DL.filter isFileHtml' `GB.fmap` SD.getDirectoryContents src
+        files <- DL.filter isFileHtml' `fmap` SD.getDirectoryContents src
         SD.setCurrentDirectory src
         putLineSeparator'
         parseFiles' files dest 0 (DF.length files)
@@ -56,7 +55,7 @@ module Parser(main, parseFiles) where
     isFileHtml' :: FilePath -> Bool
     isFileHtml' path = DL.isSuffixOf ".html" path
 
-    -- | TODO
+    -- | TODO doc
     parseFile' :: FilePath -> FilePath -> IO ()
     parseFile' fileName dest = do
         html <- DBS.readFile fileName
@@ -73,7 +72,7 @@ module Parser(main, parseFiles) where
         -- where fromBody = words.innerText.dropWhile (~/= "<body>") 
         -- where fromFooter = unwords . drop 6 . words . innerText . take 2 . dropWhile (~/= "<li id=lastmod>")
 
-    -- | TODO
+    -- | TODO doc
     parseFiles' :: [String] -> String -> Int -> Int -> IO()
     parseFiles' files dest iteration count = 
         if iteration >= count then do
@@ -87,15 +86,15 @@ module Parser(main, parseFiles) where
             parseFile' fileName dest
             parseFiles' (DL.tail files) dest iterationNumber count
     
-    -- TODO optimize, search of endIndex should start after form startIndex, todo probably move into function to return start & end use for remot too
+    -- | Pick content from first occurence of 'startTag' to first occurence of 'endTag'
     pickPairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
     pickPairTag' html startTag endTag 
         | startIndex == Nothing = DBSC.pack ""
         | endIndex == Nothing = DBSC.pack ""
-        | otherwise = subStrDBS' html (DM.fromJust startIndex) (DM.fromJust endIndex)
+        | otherwise = subStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + DBS.length endTag)
 
         where startIndex = indexOfDBS' html startTag 0
-              endIndex = indexOfDBS' html endTag 0
+              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
 
     -- | Put simle line separator to output.
     putLineSeparator' :: IO ()
@@ -105,7 +104,9 @@ module Parser(main, parseFiles) where
     removePairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
     removePairTag' html startTag endTag = removePairTag'' html startTag endTag (DBS.length endTag)
 
-    -- TODO optimize, search of endIndex should start after form startIndex
+    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
+    -- 
+    -- Requires to know length of 'endTag'
     removePairTag'' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> Int -> DBS.ByteString
     removePairTag'' html startTag endTag endTagLen
         | startIndex == Nothing = html
@@ -113,7 +114,7 @@ module Parser(main, parseFiles) where
         | otherwise = removePairTag'' (removeSubStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + endTagLen)) startTag endTag endTagLen
         
         where startIndex = indexOfDBS' html startTag 0
-              endIndex = indexOfDBS' html endTag 0
+              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
 
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
@@ -129,7 +130,7 @@ module Parser(main, parseFiles) where
         exist <- SD.doesDirectoryExist path
         if not exist then error errorMessage else return ()
 
-----------------------------------------------FOR GARBAGE COLLECT ----------------------------------------------
+---------------------------------------------- GARBAGE COLLECTION ----------------------------------------------
 
     -- uniqArrEl' :: Eq a => [a] -> [a]
     -- uniqArrEl' [] = []
