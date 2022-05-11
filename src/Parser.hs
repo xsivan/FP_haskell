@@ -1,56 +1,62 @@
-{-# LANGUAGE ViewPatterns #-}
-
 module Parser(main, parseFiles) where
-    import qualified Data.ByteString as DBS(breakSubstring, concat, drop, findIndex, isPrefixOf, length, null, readFile, tail, take, writeFile, ByteString)
+    import qualified Data.ByteString as DBS(concat, drop, isPrefixOf, length, null, readFile, tail, take, writeFile, ByteString)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.Foldable as DF(concat, length)
-    import qualified Data.List as DL(drop, dropWhile, filter, init, intersperse, last, tail, take, words)
-    import qualified Data.Maybe as DM (fromJust, fromMaybe)
-    import qualified Data.Text as DT(last, pack, toLower, unpack)
+    import qualified Data.Foldable as DF(length)
+    import qualified Data.List as DL(filter, init, isSuffixOf, last, tail)
+    import qualified Data.Maybe as DM (fromJust)
+    import qualified GHC.Base as GB(fmap)
     import qualified System.Directory as SD(createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
-    import qualified System.IO as SIO(putStr, putStrLn)
-    import qualified System.Posix.Internals (puts)
-    import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText)
+    import qualified System.IO as SIO(putStrLn)
+    import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText) -- TODO clean later
     
+    -- | Defined only as cabal requirement, does nothing.
+    -- main :: IO ()
+    -- main = do return ()
+
+    -- TODO replace for upper version later
     main :: IO ()
     main = do
         SD.setCurrentDirectory "/opt/app/data/pages"
         parseFile' "no_email_phi_30.oil.shopping_testing.0.html" "/opt/app/data/parse"
 
+    -- | Loop via html files in 'src' location, extract words from them and store it into 'dest' location
+    -- 
+    -- In case that 'src' location is not valid, throw error. In case that 'dest' location doesnt exist, creates it.
+    parseFiles :: FilePath -> FilePath -> IO ()
+    parseFiles src dest = do
+        validateDir' src "Source location doesnt exist!"
+        createDir' dest
+        files <-DL.filter isFileHtml' `GB.fmap` SD.getDirectoryContents src
+        SD.setCurrentDirectory src
+        putLineSeparator'
+        parseFiles' files dest 0 (DF.length files)
+
+    -- | Creates directory if dir in 'path' doesnt exist else do nothing.
     createDir' :: FilePath -> IO ()
     createDir' path = do
         exist <- SD.doesDirectoryExist path
         if not exist then SD.createDirectory path else return ()
 
+    -- | Creates ByteString version of end html pair tag by 'tagName'.
     getPairTagEnd' :: String -> DBS.ByteString
     getPairTagEnd' tagName = DBSC.pack("</" ++ tagName ++ ">")
     
+    -- | Creates ByteString version of start html pair tag by 'tagName'.
     getPairTagStart' :: String -> DBS.ByteString
     getPairTagStart' tagName = DBSC.pack("<" ++ tagName)
 
-    -- TODO probably replace for inbuild func
-    hasSuffix' :: String -> String -> Bool
-    hasSuffix' [] [] = True
-    hasSuffix' [] suffix = False
-    hasSuffix' text [] = True
-    hasSuffix' text suffix = if DL.last text == DL.last suffix then hasSuffix' (DL.init text) (DL.init suffix) else False
-
-    -- TODO add documentation, example here
-    -- |/O(n)/ Convert a lazy 'ByteString' into a strict 'ByteString'.
-    --
-    -- Note that this is an /expensive/ operation that forces the whole lazy
-    -- ByteString into memory and then copies all the data. If possible, try to
-    -- avoid converting back and forth between strict and lazy bytestrings.
-    --
+    -- | Find start index of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOfDBS' :: DBS.ByteString -> DBS.ByteString -> Int -> Maybe Int
     indexOfDBS' haystick needle index
         | DBS.null haystick = Nothing
         | DBS.isPrefixOf needle haystick = Just index
         | otherwise = indexOfDBS' (DBS.tail haystick) needle (index + 1)
 
-    isFileHtml' :: String -> Bool
-    isFileHtml' path = hasSuffix' path ".html"
+    -- | Determines if 'path' is to HTML file by its extension (it is simple 'String' suffix compare).
+    isFileHtml' :: FilePath -> Bool
+    isFileHtml' path = DL.isSuffixOf ".html" path
 
+    -- | TODO
     parseFile' :: FilePath -> FilePath -> IO ()
     parseFile' fileName dest = do
         html <- DBS.readFile fileName
@@ -67,15 +73,7 @@ module Parser(main, parseFiles) where
         -- where fromBody = words.innerText.dropWhile (~/= "<body>") 
         -- where fromFooter = unwords . drop 6 . words . innerText . take 2 . dropWhile (~/= "<li id=lastmod>")
 
-    parseFiles :: FilePath -> FilePath -> IO ()
-    parseFiles src dest = do
-        validateDir' src "Source location doesnt exist!"
-        createDir' dest
-        files <-DL.filter isFileHtml' `fmap` SD.getDirectoryContents src
-        SD.setCurrentDirectory src
-        putLineSeparator'
-        parseFiles' files dest 0 (DF.length files)
-
+    -- | TODO
     parseFiles' :: [String] -> String -> Int -> Int -> IO()
     parseFiles' files dest iteration count = 
         if iteration >= count then do
@@ -99,9 +97,11 @@ module Parser(main, parseFiles) where
         where startIndex = indexOfDBS' html startTag 0
               endIndex = indexOfDBS' html endTag 0
 
+    -- | Put simle line separator to output.
     putLineSeparator' :: IO ()
     putLineSeparator' = putStrLn "----------------------------------------------------------------------------------------------------"
 
+    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
     removePairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
     removePairTag' html startTag endTag = removePairTag'' html startTag endTag (DBS.length endTag)
 
@@ -115,17 +115,22 @@ module Parser(main, parseFiles) where
         where startIndex = indexOfDBS' html startTag 0
               endIndex = indexOfDBS' html endTag 0
 
+    -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
-    removeSubStrDBS' string startIndex endIndex = DBS.concat [subStrDBS' string 0 startIndex, subStrDBS' string endIndex (DBS.length string)]
+    removeSubStrDBS' text startIndex endIndex = DBS.concat [subStrDBS' text 0 startIndex, subStrDBS' text endIndex (DBS.length text)]
 
+    -- | Returns content from 'startIndex' to 'endIndex' in 'text'.
     subStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
-    subStrDBS' string startIndex endIndex = DBS.take(endIndex - startIndex) (DBS.drop startIndex string)
+    subStrDBS' text startIndex endIndex = DBS.take(endIndex - startIndex) (DBS.drop startIndex text)
 
-    uniqArrEl' :: Eq a => [a] -> [a]
-    uniqArrEl' [] = []
-    uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
-
+    -- | Validates existence of directory via 'path'. If 'path' is directory do nothing, else throw error with specific 'errorMessage'.
     validateDir' :: FilePath -> String -> IO()
     validateDir' path errorMessage = do 
         exist <- SD.doesDirectoryExist path
         if not exist then error errorMessage else return ()
+
+----------------------------------------------FOR GARBAGE COLLECT ----------------------------------------------
+
+    -- uniqArrEl' :: Eq a => [a] -> [a]
+    -- uniqArrEl' [] = []
+    -- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
