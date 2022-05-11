@@ -24,7 +24,8 @@ executable parser
         bytestring,
         containers,
         directory,
-        tagsoup
+        tagsoup,
+        text
     default-language: Haskell2010
     ghc-options: -main-is Parser
     hs-source-dirs: src
