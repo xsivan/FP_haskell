@@ -39,7 +39,7 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
-## [0.0.2] - 2022-05-17
+## [0.0.3] - 2022-05-17
 ### update cabal
 - add new dependencies
 
