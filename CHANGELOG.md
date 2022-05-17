@@ -43,8 +43,15 @@ All notable changes to this project will be documented in this file.
 ### update cabal
 - add new dependencies
 
+## [1.0.0] - 2022-05-17
+### Add new file hs
+- Create Index.hs
+- Create inverted_index.txt
+- Add functionalities to Index.hs
+
 [0.2.1]: https://github.com/xsivan/FP_haskell/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.0.2...0.1.0
+[0.0.3]: https://github.com/xsivan/FP_haskell/compare/main...0.0.3
 [0.0.2]: https://github.com/xsivan/FP_haskell/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/xsivan/FP_haskell/compare/0.0.0...0.0.1
