@@ -1,0 +1,15 @@
+{  
+    "dockerComposeFile": ["./docker-compose.yml"],
+    "extensions": [
+		"haskell.haskell",
+		"justusadam.language-haskell",
+		"isudox.vscode-jetbrains-keybindings"
+	],
+    "features": {
+        "haskell.manageHLS": "GHCup"
+    },
+    "forwardPorts": [4205],
+    "service": "haskell",
+    "shutdownAction": "stopCompose",
+    "workspaceFolder": "/opt/app"
+  }

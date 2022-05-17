@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+    haskell:
+        build: .
+        command: /bin/sh -c "while sleep 1000; do :; done"
+        cap_add:
+            - SYS_PTRACE
+        security_opt:
+            - seccomp:unconfined
+        volumes:
+            - ../:/opt/app
+        working_dir: "/opt/app"
+
