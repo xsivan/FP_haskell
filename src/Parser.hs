@@ -1,11 +1,11 @@
 module Parser(main, parseFiles) where
     import qualified Data.ByteString as DBS(concat, drop, isPrefixOf, length, null, readFile, tail, take, writeFile, ByteString)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.Foldable as DF(length)
-    import qualified Data.List as DL(filter, init, isSuffixOf, last, tail)
+    import qualified Data.Foldable as DF(concat, length, null)
+    import qualified Data.List as DL(filter, init, intersperse, isSuffixOf, last, tail, words)
     import qualified Data.Maybe as DM (fromJust)
     import qualified System.Directory as SD(createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
-    import qualified System.IO as SIO(putStrLn)
+    import qualified System.IO as SIO(putStrLn, writeFile)
     import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText) -- TODO clean later
     
     -- | Defined only as cabal requirement, does nothing.
@@ -15,8 +15,7 @@ module Parser(main, parseFiles) where
     -- TODO replace for upper version later
     main :: IO ()
     main = do
-        SD.setCurrentDirectory "/opt/app/data/pages"
-        parseFile' "no_email_phi_30.oil.shopping_testing.0.html" "/opt/app/data/parse"
+        parseFiles "/opt/app/data/pages" "/opt/app/data/parse"
 
     -- | Loop via html files in 'src' location, extract words from them and store it into 'dest' location
     -- 
@@ -59,18 +58,16 @@ module Parser(main, parseFiles) where
     parseFile' :: FilePath -> FilePath -> IO ()
     parseFile' fileName dest = do
         html <- DBS.readFile fileName
-        DBS.writeFile (dest ++ "/" ++ fileName) (pickPairTag' html (getPairTagStart' "body") (getPairTagEnd' "body"))
+        let words = DL.words . TS.innerText $ TS.parseTags (DBSC.unpack (removePairTags' (pickPairTag' html bodyStartTag bodyEndTag) tagsToRemove))
+        SIO.writeFile (dest ++ "/" ++ fileName) (DF.concat (DL.intersperse "\n" words))
 
-        -- TODO to lower should be called on html
-        -- TODO removing of par tags etc should be called somewhere here too or implemented arr input if there is multiple par tags
-
-        -- let words = wordsInHtml $ TS.parseTags (DBSC.unpack (removePairTag' html "script"))
-        -- writeFile (dest ++ "/" ++ fileName) (DF.concat (DL.intersperse " " words))
-        -- where wordsInHtml = DL.words . TS.innerText . DL.dropWhile (TS.~/= "<body>") 
-        -- let bodyContent = sort $ uniqArrEl' $ fromBody $ parseTags (unpack (toLower (pack fileContent)))
-        -- writeFile (dest ++ "/" ++ fileName) (concat (intersperse " " bodyContent))
-        -- where fromBody = words.innerText.dropWhile (~/= "<body>") 
-        -- where fromFooter = unwords . drop 6 . words . innerText . take 2 . dropWhile (~/= "<li id=lastmod>")
+        where bodyEndTag = getPairTagEnd' "body"
+              bodyStartTag = getPairTagStart' "body"
+              tagsToRemove = [
+                    ((getPairTagStart' "noscript"), (getPairTagEnd' "noscript")),
+                    ((getPairTagStart' "script"), (getPairTagEnd' "script")),
+                    ((getPairTagStart' "style"), (getPairTagEnd' "style"))
+                ]
 
     -- | TODO doc
     parseFiles' :: [String] -> String -> Int -> Int -> IO()
@@ -132,14 +129,36 @@ module Parser(main, parseFiles) where
     subStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
     subStrDBS' text startIndex endIndex = DBS.take(endIndex - startIndex) (DBS.drop startIndex text)
 
+    -- TODO implement use DBS toLower on char, loop string and replace it probably use another function with 2 params, pick head from first, transform store into second and then return second in the end
+    -- toLowerBS' :: ByteString -> ByteString
+
     -- | Validates existence of directory via 'path'. If 'path' is directory do nothing, else throw error with specific 'errorMessage'.
     validateDir' :: FilePath -> String -> IO()
     validateDir' path errorMessage = do 
         exist <- SD.doesDirectoryExist path
         if not exist then error errorMessage else return ()
 
----------------------------------------------- GARBAGE COLLECTION ----------------------------------------------
+---------------------------------------------- TODO COLLECTION ----------------------------------------------
 
     -- uniqArrEl' :: Eq a => [a] -> [a]
     -- uniqArrEl' [] = []
     -- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
+
+    ------------- PARSER big file reader
+    -- add input file, inlcude only first 5000 pages
+    -- implement correct reading of file per page
+
+    ------------- PARSER links
+    -- parse content of href from html, store into another location under file with same name
+    -- add func to pick domain part https:\\www.google.sk\masdas -> google.sk
+    -- parse links with newly created funct, include name of file of parser words & links
+
+    ------------- PARSER ADVANCED part
+    -- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
+    -- lowercase parser words
+    -- order words alhabetical
+    -- remove stop words (probably add better dic for stopwords)
+
+    -- PARSER finalitazion
+    -- fix & optimizate 
+    -- find solution for issue with tex<em>text2 parsing to textext2 instead of tex text2
