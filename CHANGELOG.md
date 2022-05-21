@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2022-05-21
+### Added
+- Basic version of words parsing from html content was created, for now these words are not cleaned, will be added in the near future version
+- Simple documentation of Parser functions
+### Changed
+- Replaced our functions with not optimal complexity for better ones
+### Removed
+- Data pages content, will be added in the near future in differend format 
+
 ## [0.2.1] - 2022-05-08
 ### Changed
  - Versionning 
@@ -39,6 +48,7 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
+[0.3.0]: https://github.com/xsivan/FP_haskell/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/xsivan/FP_haskell/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.0.2...0.1.0

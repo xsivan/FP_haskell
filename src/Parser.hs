@@ -1,49 +1,164 @@
 module Parser(main, parseFiles) where
-    import System.Directory (createDirectory, doesFileExist, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
-    import System.IO (putStrLn)
+    import qualified Data.ByteString as DBS(concat, drop, isPrefixOf, length, null, readFile, tail, take, writeFile, ByteString)
+    import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
+    import qualified Data.Foldable as DF(concat, length, null)
+    import qualified Data.List as DL(filter, init, intersperse, isSuffixOf, last, tail, words)
+    import qualified Data.Maybe as DM (fromJust)
+    import qualified System.Directory as SD(createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
+    import qualified System.IO as SIO(putStrLn, writeFile)
+    import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText) -- TODO clean later
     
+    -- | Defined only as cabal requirement, does nothing.
+    -- main :: IO ()
+    -- main = do return ()
+
+    -- TODO replace for upper version later
     main :: IO ()
-    main = parseFiles "/opt/app/data/pages/" "/opt/app/data/parse"
+    main = do
+        parseFiles "/opt/app/data/pages" "/opt/app/data/parse"
 
-    createDir' :: FilePath -> IO ()
-    createDir' path = do
-        exist <- doesDirectoryExist path
-        if not exist then createDirectory path else return ()
-
-    hasSuffix' :: String -> String -> Bool
-    hasSuffix' [] [] = True
-    hasSuffix' [] suffix = False
-    hasSuffix' text [] = True
-    hasSuffix' text suffix = if last text == last suffix then hasSuffix' (init text) (init suffix) else False
-
-    isFileHtml' :: String -> Bool
-    isFileHtml' path = hasSuffix' path ".html"
-
-    parseFile' :: FilePath -> FilePath -> IO ()
-    parseFile' fileName dest = do
-        -- TODO fill file with real words
-        writeFile (dest ++ "/" ++ fileName) "something"
-
+    -- | Loop via html files in 'src' location, extract words from them and store it into 'dest' location
+    -- 
+    -- In case that 'src' location is not valid, throw error. In case that 'dest' location doesnt exist, creates it.
     parseFiles :: FilePath -> FilePath -> IO ()
     parseFiles src dest = do
         validateDir' src "Source location doesnt exist!"
         createDir' dest
-        files <-filter isFileHtml' `fmap` getDirectoryContents src
-        setCurrentDirectory src
-        parseFiles' files dest 0 (length files)
+        files <- DL.filter isFileHtml' `fmap` SD.getDirectoryContents src
+        SD.setCurrentDirectory src
+        putLineSeparator'
+        parseFiles' files dest 0 (DF.length files)
 
+    -- | Creates directory if dir in 'path' doesnt exist else do nothing.
+    createDir' :: FilePath -> IO ()
+    createDir' path = do
+        exist <- SD.doesDirectoryExist path
+        if not exist then SD.createDirectory path else return ()
+
+    -- | Creates ByteString version of end html pair tag by 'tagName'.
+    getPairTagEnd' :: String -> DBS.ByteString
+    getPairTagEnd' tagName = DBSC.pack("</" ++ tagName ++ ">")
+    
+    -- | Creates ByteString version of start html pair tag by 'tagName'.
+    getPairTagStart' :: String -> DBS.ByteString
+    getPairTagStart' tagName = DBSC.pack("<" ++ tagName)
+
+    -- | Find start index of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
+    indexOfDBS' :: DBS.ByteString -> DBS.ByteString -> Int -> Maybe Int
+    indexOfDBS' haystick needle index
+        | DBS.null haystick = Nothing
+        | DBS.isPrefixOf needle haystick = Just index
+        | otherwise = indexOfDBS' (DBS.tail haystick) needle (index + 1)
+
+    -- | Determines if 'path' is to HTML file by its extension (it is simple 'String' suffix compare).
+    isFileHtml' :: FilePath -> Bool
+    isFileHtml' path = DL.isSuffixOf ".html" path
+
+    -- | TODO doc
+    parseFile' :: FilePath -> FilePath -> IO ()
+    parseFile' fileName dest = do
+        html <- DBS.readFile fileName
+        let words = DL.words . TS.innerText $ TS.parseTags (DBSC.unpack (removePairTags' (pickPairTag' html bodyStartTag bodyEndTag) tagsToRemove))
+        SIO.writeFile (dest ++ "/" ++ fileName) (DF.concat (DL.intersperse "\n" words))
+
+        where bodyEndTag = getPairTagEnd' "body"
+              bodyStartTag = getPairTagStart' "body"
+              tagsToRemove = [
+                    ((getPairTagStart' "noscript"), (getPairTagEnd' "noscript")),
+                    ((getPairTagStart' "script"), (getPairTagEnd' "script")),
+                    ((getPairTagStart' "style"), (getPairTagEnd' "style"))
+                ]
+
+    -- | TODO doc
     parseFiles' :: [String] -> String -> Int -> Int -> IO()
     parseFiles' files dest iteration count = 
-        if iteration >= count 
-            then putStr ("\nParsing completed!\n\n")
+        if iteration >= count then do
+            putLineSeparator'
+            SIO.putStrLn ("Parsing completed!")
+            putLineSeparator'
         else do
             let iterationNumber = iteration + 1
             let fileName = head files
-            putStr ("Parsing " ++ show iterationNumber ++ ". file of total " ++ show count ++ " - " ++ fileName ++ "\n")
+            SIO.putStrLn ("Parsing " ++ show iterationNumber ++ ". file of total " ++ show count ++ " - " ++ fileName)
             parseFile' fileName dest
-            parseFiles' (tail files) dest iterationNumber count
+            parseFiles' (DL.tail files) dest iterationNumber count
+    
+    -- | Pick content from first occurence of 'startTag' to first occurence of 'endTag'
+    pickPairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
+    pickPairTag' html startTag endTag 
+        | startIndex == Nothing = DBSC.pack ""
+        | endIndex == Nothing = DBSC.pack ""
+        | otherwise = subStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + DBS.length endTag)
 
+        where startIndex = indexOfDBS' html startTag 0
+              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
+
+    -- | Put simle line separator to output.
+    putLineSeparator' :: IO ()
+    putLineSeparator' = putStrLn "----------------------------------------------------------------------------------------------------"
+
+    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
+    removePairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
+    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (DBS.length endTag)
+
+    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
+    -- 
+    -- Requires to know length of 'endTag'
+    removePairTag'' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> Int -> DBS.ByteString
+    removePairTag'' html startTag endTag endTagLen
+        | startIndex == Nothing = html
+        | endIndex == Nothing = html
+        | otherwise = removePairTag'' (removeSubStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + endTagLen)) startTag endTag endTagLen
+        
+        where startIndex = indexOfDBS' html startTag 0
+              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
+
+    -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
+    removePairTags' :: DBS.ByteString -> [(DBS.ByteString , DBS.ByteString)] -> DBS.ByteString
+    removePairTags' html tags
+        | DF.null tags = html
+        | otherwise = removePairTags' (removePairTag' html (fst tag) (snd tag)) (tail tags)
+
+        where tag = head tags
+
+    -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
+    removeSubStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
+    removeSubStrDBS' text startIndex endIndex = DBS.concat [subStrDBS' text 0 startIndex, subStrDBS' text endIndex (DBS.length text)]
+
+    -- | Returns content from 'startIndex' to 'endIndex' in 'text'.
+    subStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
+    subStrDBS' text startIndex endIndex = DBS.take(endIndex - startIndex) (DBS.drop startIndex text)
+
+    -- TODO implement use DBS toLower on char, loop string and replace it probably use another function with 2 params, pick head from first, transform store into second and then return second in the end
+    -- toLowerBS' :: ByteString -> ByteString
+
+    -- | Validates existence of directory via 'path'. If 'path' is directory do nothing, else throw error with specific 'errorMessage'.
     validateDir' :: FilePath -> String -> IO()
     validateDir' path errorMessage = do 
-        exist <- doesDirectoryExist path
+        exist <- SD.doesDirectoryExist path
         if not exist then error errorMessage else return ()
+
+---------------------------------------------- TODO COLLECTION ----------------------------------------------
+
+    -- uniqArrEl' :: Eq a => [a] -> [a]
+    -- uniqArrEl' [] = []
+    -- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
+
+    ------------- PARSER big file reader
+    -- add input file, inlcude only first 5000 pages
+    -- implement correct reading of file per page
+
+    ------------- PARSER links
+    -- parse content of href from html, store into another location under file with same name
+    -- add func to pick domain part https:\\www.google.sk\masdas -> google.sk
+    -- parse links with newly created funct, include name of file of parser words & links
+
+    ------------- PARSER ADVANCED part
+    -- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
+    -- lowercase parser words
+    -- order words alhabetical
+    -- remove stop words (probably add better dic for stopwords)
+
+    -- PARSER finalitazion
+    -- fix & optimizate 
+    -- find solution for issue with tex<em>text2 parsing to textext2 instead of tex text2
