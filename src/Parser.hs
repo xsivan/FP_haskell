@@ -5,12 +5,14 @@ module Parser(main, parseJLFile) where
     import qualified Control.Applicative as CA(empty)
     import qualified Data.Aeson as JSON(decode, parseJSON , object, FromJSON, Value(Object), (.:))
     import qualified Data.ByteString as DBS(fromStrict, hGetLine, ByteString)
-    import qualified Data.List as DL(drop, isSuffixOf)
-    import qualified Data.Tuple as DT(fst, snd)
+    import qualified Data.List as DL(drop, head, intersperse, isSuffixOf, tail, words)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, hGetLine, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
+    import qualified Text.HTML.TagSoup as TS(innerText, parseTags)
     import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, recreateDir, removeSubString, subString, validateFile)
+    
+    import Data.Time -- TODo remove me later, dont forgot on cabal package time
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -60,7 +62,7 @@ module Parser(main, parseJLFile) where
         else do
             lineRaw <- DBS.hGetLine fileHandle
             parseJLineContent' (JSON.decode (DBS.fromStrict lineRaw) :: Maybe JLLine) destLinksDir destWordsDir lineNumber
-            parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
+            -- parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
 
         where lineNumber = processedLineNumber + 1
     
@@ -83,11 +85,13 @@ module Parser(main, parseJLFile) where
     -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
-        IO.writeFile destWordsFile clanedBodycontent
-        -- let bodyContent = pickPairTagContent' html "<body" "</body>"
-        print destLinksFile
+        start <- getCurrentTime
+        IO.writeFile destWordsFile (concat (DL.intersperse "\n" rawWordsString))
+        end <- getCurrentTime
+        print (diffUTCTime end start)
 
-        where clanedBodycontent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
+        where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
+              rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
               tagsToRemove = [("<noscript", "</noscript>"), ("<script", "</script>"), ("<style", "</style>")]
 
     -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
@@ -122,12 +126,11 @@ module Parser(main, parseJLFile) where
                     Nothing -> html
                     Just endIndex -> do
                         removePairTag'' (Utils.removeSubString html rStartIndex rEndIndex) startTag endTag endTagLen (offset + startIndex)
-
                         where rEndIndex = startIndex + offset + endIndex + endTagLen
                               rStartIndex = startIndex + offset
 
     -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
     removePairTags' :: String -> [(String , String)] -> String
     removePairTags' html [] = html
-    removePairTags' html tags = removePairTags' (removePairTag' html (fst tag) (snd tag)) (tail tags)
-        where tag = head tags
+    removePairTags' html tags = removePairTags' (removePairTag' html (fst tag) (snd tag)) (DL.tail tags)
+        where tag = DL.head tags
