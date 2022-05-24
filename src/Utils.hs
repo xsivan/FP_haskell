@@ -1,7 +1,7 @@
 module Utils(decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recreateDir, removeSubString, subString, validateFile) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, reverse, take)
+    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, reverse, tail, take)
     import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, removeDirectoryRecursive)
 
     -- | Decodes hashed file name.
@@ -19,7 +19,7 @@ module Utils(decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recr
     indexOf' haystick needle index
         | null haystick = Nothing
         | needle `DL.isPrefixOf` haystick = Just index
-        | otherwise = indexOf' (tail haystick) needle (index + 1)
+        | otherwise = indexOf' (DL.tail haystick) needle (index + 1)
 
     -- | Find index for last occurence of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOfReverse :: String -> String -> Maybe Int
