@@ -30,3 +30,15 @@ executable parser
     ghc-options: -main-is Parser
     hs-source-dirs: src
     main-is: Parser.hs
+
+executable utils
+    build-depends:
+        base ^>=4.16.1.0,
+        base64-bytestring,
+        bytestring,
+        containers,
+        directory
+    default-language: Haskell2010
+    ghc-options: -main-is Utils
+    hs-source-dirs: src
+    main-is: Utils.hs
