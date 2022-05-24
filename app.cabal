@@ -20,16 +20,20 @@ executable app
 
 executable parser
     build-depends:
+        aeson,
         base ^>=4.16.1.0,
+        base64-bytestring,
         bytestring,
         containers,
         directory,
-        tagsoup,
-        text
+        network-uri,
+        tagsoup
     default-language: Haskell2010
     ghc-options: -main-is Parser
     hs-source-dirs: src
     main-is: Parser.hs
+    other-extensions: DeriveGeneric, OverloadedStrings
+    other-modules: Utils
 
 executable utils
     build-depends:
