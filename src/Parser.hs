@@ -110,16 +110,21 @@ module Parser(main, parseJLFile) where
 
     -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
     removePairTag' :: String -> String -> String -> String
-    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (length endTag)
-    removePairTag'' :: String -> String -> String -> Int -> String
-    removePairTag'' html startTag endTag endTagLen =
-        -- TODO check optimization where you offset start index by last remove of same tag and end index by start index
-        case Utils.indexOf html startTag of
+    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (length endTag) 0
+    removePairTag'' :: String -> String -> String -> Int -> Int -> String
+    removePairTag'' html startTag endTag endTagLen offset = do
+        let offsetHtml = DL.drop offset html
+        case Utils.indexOf offsetHtml startTag of
             Nothing -> html
-            Just startIndex ->
-                case Utils.indexOf html endTag of
+            Just startIndex -> do
+                let startOffsetHtml = DL.drop startIndex offsetHtml
+                case Utils.indexOf startOffsetHtml endTag of
                     Nothing -> html
-                    Just endIndex -> removePairTag'' (Utils.removeSubString html startIndex (endIndex + endTagLen)) startTag endTag endTagLen
+                    Just endIndex -> do
+                        removePairTag'' (Utils.removeSubString html rStartIndex rEndIndex) startTag endTag endTagLen (offset + startIndex)
+
+                        where rEndIndex = startIndex + offset + endIndex + endTagLen
+                              rStartIndex = startIndex + offset
 
     -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
     removePairTags' :: String -> [(String , String)] -> String
