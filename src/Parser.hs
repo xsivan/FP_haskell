@@ -83,11 +83,12 @@ module Parser(main, parseJLFile) where
     -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
-        let clanedBodycontent = pickPairTagContent' html "<body" "</body>"
+        IO.writeFile destWordsFile clanedBodycontent
         -- let bodyContent = pickPairTagContent' html "<body" "</body>"
         print destLinksFile
 
-        where tagsToRemove = [("<noscript", "</noscript>"), ("<script", "</script>"), ("<style", "</style>")]
+        where clanedBodycontent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
+              tagsToRemove = [("<noscript", "</noscript>"), ("<script", "</script>"), ("<style", "</style>")]
 
     -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
     pickPairTagContent' :: String -> String -> String -> String
