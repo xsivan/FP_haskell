@@ -1,164 +1,152 @@
-module Parser(main, parseFiles) where
-    import qualified Data.ByteString as DBS(concat, drop, isPrefixOf, length, null, readFile, tail, take, writeFile, ByteString)
-    import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.Foldable as DF(concat, length, null)
-    import qualified Data.List as DL(filter, init, intersperse, isSuffixOf, last, tail, words)
-    import qualified Data.Maybe as DM (fromJust)
-    import qualified System.Directory as SD(createDirectory, doesDirectoryExist, getDirectoryContents, setCurrentDirectory)
-    import qualified System.IO as SIO(putStrLn, writeFile)
-    import qualified Text.HTML.TagSoup as TS((~/=), parseTags, innerText) -- TODO clean later
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+
+module Parser(main, parseJLFile) where
+    import qualified Control.Applicative as CA(empty)
+    import qualified Data.Aeson as JSON(decode, parseJSON , object, FromJSON, Value(Object), (.:))
+    import qualified Data.ByteString as DBS(fromStrict, hGetLine, ByteString)
+    import qualified Data.List as DL(drop, head, intersperse, isSuffixOf, tail, words)
+    import qualified GHC.Generics as GHCG(Generic)
+    import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
+    import qualified System.IO as IO(hIsEOF, hGetLine, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
+    import qualified Text.HTML.TagSoup as TS(innerText, parseTags)
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, recreateDir, removeSubString, subString, validateFile)
     
+    import Data.Time -- TODo remove me later, dont forgot on cabal package time
+    
+    data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
+
+    instance JSON.FromJSON JLLine where
+        parseJSON (JSON.Object v) = JLLine <$> v JSON..: "html_content" <*> v JSON..: "url"
+        parseJSON _ = CA.empty
+
     -- | Defined only as cabal requirement, does nothing.
-    -- main :: IO ()
-    -- main = do return ()
-
-    -- TODO replace for upper version later
     main :: IO ()
-    main = do
-        parseFiles "/opt/app/data/pages" "/opt/app/data/parse"
+    main = do return ()
 
-    -- | Loop via html files in 'src' location, extract words from them and store it into 'dest' location
+    -- TODO remove later
+    test :: IO ()
+    test = do
+        parseJLFile "/opt/app/data/collection_100.jl" "/opt/app/data/parse-links" "/opt/app/data/parse-words"
+
+    -- | Removes all parts of url except its domain and sub-page and return it.
+    cleanUrl' :: String -> Maybe String
+    cleanUrl' url =
+        case NW.parseURI url of
+            Nothing -> Nothing
+            Just uri -> case NW.uriAuthority uri of
+                Nothing -> Nothing
+                Just auth -> do
+                    let parsedUrl = NW.uriRegName auth ++ NW.uriPath uri
+                    if "/" `DL.isSuffixOf`parsedUrl then Just parsedUrl
+                    else Just $ parsedUrl ++ "/"
+
+    -- | Loops via lines of 'srcFile'.jl file, from each line extract words and links of html and links and store it into 'destWordsDir' and 'destLinksDir' location
     -- 
-    -- In case that 'src' location is not valid, throw error. In case that 'dest' location doesnt exist, creates it.
-    parseFiles :: FilePath -> FilePath -> IO ()
-    parseFiles src dest = do
-        validateDir' src "Source location doesnt exist!"
-        createDir' dest
-        files <- DL.filter isFileHtml' `fmap` SD.getDirectoryContents src
-        SD.setCurrentDirectory src
-        putLineSeparator'
-        parseFiles' files dest 0 (DF.length files)
+    -- In case that 'srcFile' file is not valid, throw error. Recreates 'destWordsDir' or 'destLinksDir' directories.
+    parseJLFile :: FilePath -> FilePath -> FilePath -> IO ()
+    parseJLFile srcFile destLinksDir destWordsDir = do
+        Utils.validateFile srcFile "jl" "Source file doesnt exist!"
+        Utils.recreateDir destLinksDir
+        Utils.recreateDir destWordsDir
 
-    -- | Creates directory if dir in 'path' doesnt exist else do nothing.
-    createDir' :: FilePath -> IO ()
-    createDir' path = do
-        exist <- SD.doesDirectoryExist path
-        if not exist then SD.createDirectory path else return ()
+        fileHandle <- IO.openFile srcFile IO.ReadMode
+        parseJLLine' fileHandle destLinksDir destWordsDir 0
 
-    -- | Creates ByteString version of end html pair tag by 'tagName'.
-    getPairTagEnd' :: String -> DBS.ByteString
-    getPairTagEnd' tagName = DBSC.pack("</" ++ tagName ++ ">")
-    
-    -- | Creates ByteString version of start html pair tag by 'tagName'.
-    getPairTagStart' :: String -> DBS.ByteString
-    getPairTagStart' tagName = DBSC.pack("<" ++ tagName)
-
-    -- | Find start index of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
-    indexOfDBS' :: DBS.ByteString -> DBS.ByteString -> Int -> Maybe Int
-    indexOfDBS' haystick needle index
-        | DBS.null haystick = Nothing
-        | DBS.isPrefixOf needle haystick = Just index
-        | otherwise = indexOfDBS' (DBS.tail haystick) needle (index + 1)
-
-    -- | Determines if 'path' is to HTML file by its extension (it is simple 'String' suffix compare).
-    isFileHtml' :: FilePath -> Bool
-    isFileHtml' path = DL.isSuffixOf ".html" path
-
-    -- | TODO doc
-    parseFile' :: FilePath -> FilePath -> IO ()
-    parseFile' fileName dest = do
-        html <- DBS.readFile fileName
-        let words = DL.words . TS.innerText $ TS.parseTags (DBSC.unpack (removePairTags' (pickPairTag' html bodyStartTag bodyEndTag) tagsToRemove))
-        SIO.writeFile (dest ++ "/" ++ fileName) (DF.concat (DL.intersperse "\n" words))
-
-        where bodyEndTag = getPairTagEnd' "body"
-              bodyStartTag = getPairTagStart' "body"
-              tagsToRemove = [
-                    ((getPairTagStart' "noscript"), (getPairTagEnd' "noscript")),
-                    ((getPairTagStart' "script"), (getPairTagEnd' "script")),
-                    ((getPairTagStart' "style"), (getPairTagEnd' "style"))
-                ]
-
-    -- | TODO doc
-    parseFiles' :: [String] -> String -> Int -> Int -> IO()
-    parseFiles' files dest iteration count = 
-        if iteration >= count then do
-            putLineSeparator'
-            SIO.putStrLn ("Parsing completed!")
-            putLineSeparator'
+    -- | Loops via lines of 'fileHandle' and per line calls parseJLineContent where pass parsed JSON object of that line
+    parseJLLine' :: IO.Handle -> FilePath -> FilePath -> Int -> IO()
+    parseJLLine' fileHandle destLinksDir destWordsDir processedLineNumber = do 
+        isFileEnd <- IO.hIsEOF fileHandle
+        if isFileEnd then 
+            putSection' "Parsing completed!"
         else do
-            let iterationNumber = iteration + 1
-            let fileName = head files
-            SIO.putStrLn ("Parsing " ++ show iterationNumber ++ ". file of total " ++ show count ++ " - " ++ fileName)
-            parseFile' fileName dest
-            parseFiles' (DL.tail files) dest iterationNumber count
+            lineRaw <- DBS.hGetLine fileHandle
+            parseJLineContent' (JSON.decode (DBS.fromStrict lineRaw) :: Maybe JLLine) destLinksDir destWordsDir lineNumber
+            -- parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
+
+        where lineNumber = processedLineNumber + 1
     
-    -- | Pick content from first occurence of 'startTag' to first occurence of 'endTag'
-    pickPairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
-    pickPairTag' html startTag endTag 
-        | startIndex == Nothing = DBSC.pack ""
-        | endIndex == Nothing = DBSC.pack ""
-        | otherwise = subStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + DBS.length endTag)
+    -- | In case that input parse content has data in valid format, calls `parseJLineHtmlContent`
+    -- with dest paths defined as input dest dir path + MD5 hash of url from content data.
+    parseJLineContent' :: Maybe JLLine -> String -> String -> Int -> IO()
+    parseJLineContent' parseMaybe destLinksDir destWordsDir lineNumber =
+        case parseMaybe of
+            Nothing -> print $ lineId ++ " - skipped, invalid JSON structure"
+            Just parse -> do
+                case cleanUrl' $ url parse of
+                    Nothing -> print $ lineId ++ " - skipped, contains invalid URL"
+                    Just url -> do 
+                        let fileName = Utils.encodeFileName url
+                        putStrLn $ lineId ++ " - " ++ url ++ " - starting parsing of html content."
+                        parseJLineHtmlContent' (html_content parse) (destLinksDir ++ "/" ++ fileName) (destWordsDir ++ "/" ++ fileName)             
 
-        where startIndex = indexOfDBS' html startTag 0
-              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
+        where lineId = show lineNumber ++ ". line"
 
-    -- | Put simle line separator to output.
-    putLineSeparator' :: IO ()
-    putLineSeparator' = putStrLn "----------------------------------------------------------------------------------------------------"
+    -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
+    parseJLineHtmlContent' :: String -> String -> String-> IO()
+    parseJLineHtmlContent' html destLinksFile destWordsFile = do
+        start <- getCurrentTime
+        IO.writeFile destWordsFile (concat (DL.intersperse "\n" rawWordsString))
+        end <- getCurrentTime
+        print (diffUTCTime end start)
+
+        where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
+              rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
+              tagsToRemove = [("<noscript", "</noscript>"), ("<script", "</script>"), ("<style", "</style>")]
+
+    -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
+    pickPairTagContent' :: String -> String -> String -> String
+    pickPairTagContent' html startTag endTag =
+        case Utils.indexOf html startTag of
+            Nothing -> ""
+            Just startIndex ->
+                case Utils.indexOfReverse html endTag of
+                    Nothing -> ""
+                    Just endIndex -> Utils.subString html startIndex (endIndex + length endTag)
+
+    -- | Put section formatted text to output.
+    putSection' :: String -> IO()
+    putSection' title = (>>)((>>) putSectionSeparator' (IO.putStrLn $ "--- " ++ title)) putSectionSeparator'
+
+    -- | Put simle section separator to output.
+    putSectionSeparator' :: IO ()
+    putSectionSeparator' = IO.putStrLn "----------------------------------------------------------------------------------------------------"
 
     -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
-    removePairTag' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> DBS.ByteString
-    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (DBS.length endTag)
-
-    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
-    -- 
-    -- Requires to know length of 'endTag'
-    removePairTag'' :: DBS.ByteString -> DBS.ByteString -> DBS.ByteString -> Int -> DBS.ByteString
-    removePairTag'' html startTag endTag endTagLen
-        | startIndex == Nothing = html
-        | endIndex == Nothing = html
-        | otherwise = removePairTag'' (removeSubStrDBS' html (DM.fromJust startIndex) ((DM.fromJust endIndex) + endTagLen)) startTag endTag endTagLen
-        
-        where startIndex = indexOfDBS' html startTag 0
-              endIndex = indexOfDBS' (DBS.drop (DM.fromJust startIndex) html) endTag (DM.fromJust startIndex)
+    removePairTag' :: String -> String -> String -> String
+    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (length endTag) 0
+    removePairTag'' :: String -> String -> String -> Int -> Int -> String
+    removePairTag'' html startTag endTag endTagLen offset = do
+        let offsetHtml = DL.drop offset html
+        case Utils.indexOf offsetHtml startTag of
+            Nothing -> html
+            Just startIndex -> do
+                let startOffsetHtml = DL.drop startIndex offsetHtml
+                case Utils.indexOf startOffsetHtml endTag of
+                    Nothing -> html
+                    Just endIndex -> do
+                        removePairTag'' (Utils.removeSubString html rStartIndex rEndIndex) startTag endTag endTagLen (offset + startIndex)
+                        where rEndIndex = startIndex + offset + endIndex + endTagLen
+                              rStartIndex = startIndex + offset
 
     -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
-    removePairTags' :: DBS.ByteString -> [(DBS.ByteString , DBS.ByteString)] -> DBS.ByteString
-    removePairTags' html tags
-        | DF.null tags = html
-        | otherwise = removePairTags' (removePairTag' html (fst tag) (snd tag)) (tail tags)
-
-        where tag = head tags
-
-    -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
-    removeSubStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
-    removeSubStrDBS' text startIndex endIndex = DBS.concat [subStrDBS' text 0 startIndex, subStrDBS' text endIndex (DBS.length text)]
-
-    -- | Returns content from 'startIndex' to 'endIndex' in 'text'.
-    subStrDBS' :: DBS.ByteString -> Int -> Int -> DBS.ByteString
-    subStrDBS' text startIndex endIndex = DBS.take(endIndex - startIndex) (DBS.drop startIndex text)
-
-    -- TODO implement use DBS toLower on char, loop string and replace it probably use another function with 2 params, pick head from first, transform store into second and then return second in the end
-    -- toLowerBS' :: ByteString -> ByteString
-
-    -- | Validates existence of directory via 'path'. If 'path' is directory do nothing, else throw error with specific 'errorMessage'.
-    validateDir' :: FilePath -> String -> IO()
-    validateDir' path errorMessage = do 
-        exist <- SD.doesDirectoryExist path
-        if not exist then error errorMessage else return ()
+    removePairTags' :: String -> [(String , String)] -> String
+    removePairTags' html [] = html
+    removePairTags' html tags = removePairTags' (removePairTag' html (fst tag) (snd tag)) (DL.tail tags)
+        where tag = DL.head tags
 
 ---------------------------------------------- TODO COLLECTION ----------------------------------------------
 
-    -- uniqArrEl' :: Eq a => [a] -> [a]
-    -- uniqArrEl' [] = []
-    -- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
+-- uniqArrEl' :: Eq a => [a] -> [a]
+-- uniqArrEl' [] = []
+-- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
 
-    ------------- PARSER big file reader
-    -- add input file, inlcude only first 5000 pages
-    -- implement correct reading of file per page
+------------- PARSER links
+-- parse content of href from html, store into another location under file with same name
+-- parse links from file
 
-    ------------- PARSER links
-    -- parse content of href from html, store into another location under file with same name
-    -- add func to pick domain part https:\\www.google.sk\masdas -> google.sk
-    -- parse links with newly created funct, include name of file of parser words & links
-
-    ------------- PARSER ADVANCED part
-    -- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
-    -- lowercase parser words
-    -- order words alhabetical
-    -- remove stop words (probably add better dic for stopwords)
-
-    -- PARSER finalitazion
-    -- fix & optimizate 
-    -- find solution for issue with tex<em>text2 parsing to textext2 instead of tex text2
+------------- PARSER ADVANCED part
+-- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
+-- lowercase parser words
+-- order words alhabetical
+-- remove stop words (probably add better dic for stopwords)

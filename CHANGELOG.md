@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2022-05-24
+### Added
+- Input collection of first 100 lines of Brasil pages dataset
+- New Utils module with function shared across other modules. This modules include functions like:
+  - decodeFileName
+  - encodeFileName
+  - indexOf
+  - indexOfReverse
+  - recreateDir
+  - removeSubString
+  - subString
+  - validateFile
+- JSON parsing functionality to read content of JL file
+### Changed
+- Parser now loops pages from JL file instead of html files inside folder
+- Significantly optimized time complexity of removePairTag function
+- Parser now names out files as base64 encode of source URL, where URL is source URL cleaned by redundant parts like protocol, fragment, query params, etc...
+
 ## [0.3.0] - 2022-05-21
 ### Added
 - Basic version of words parsing from html content was created, for now these words are not cleaned, will be added in the near future version
@@ -48,6 +66,7 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
+[0.4.0]: https://github.com/xsivan/FP_haskell/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/xsivan/FP_haskell/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/xsivan/FP_haskell/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.2.0

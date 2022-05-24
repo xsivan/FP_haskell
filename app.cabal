@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name: app
-version: 0.3.0
+version: 0.4.0
 synopsis: FP project
 homepage: https://github.com/xsivan/FP_haskell
 bug-reports: https://github.com/xsivan/FP_haskell/issues
@@ -20,13 +20,30 @@ executable app
 
 executable parser
     build-depends:
+        aeson,
         base ^>=4.16.1.0,
+        base64-bytestring,
         bytestring,
         containers,
         directory,
+        network-uri,
         tagsoup,
-        text
+        time
     default-language: Haskell2010
     ghc-options: -main-is Parser
     hs-source-dirs: src
     main-is: Parser.hs
+    other-extensions: DeriveGeneric, OverloadedStrings
+    other-modules: Utils
+
+executable utils
+    build-depends:
+        base ^>=4.16.1.0,
+        base64-bytestring,
+        bytestring,
+        containers,
+        directory
+    default-language: Haskell2010
+    ghc-options: -main-is Utils
+    hs-source-dirs: src
+    main-is: Utils.hs
