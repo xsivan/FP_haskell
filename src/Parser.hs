@@ -25,7 +25,7 @@ module Parser(main, parseJLFile) where
     -- TODO remove later
     test :: IO ()
     test = do
-        parseJLFile "/opt/app/data/collection_100.jl" "/opt/app/data/parse-words" "/opt/app/data/parse-links"
+        parseJLFile "/opt/app/data/collection_100.jl" "/opt/app/data/parse-links" "/opt/app/data/parse-words"
 
     -- | Removes all parts of url except its domain and sub-page and return it.
     cleanUrl' :: String -> Maybe String
@@ -107,15 +107,16 @@ module Parser(main, parseJLFile) where
     putSectionSeparator' :: IO ()
     putSectionSeparator' = IO.putStrLn "----------------------------------------------------------------------------------------------------"
 
-        -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
+    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
     removePairTag' :: String -> String -> String -> String
     removePairTag' html startTag endTag = removePairTag'' html startTag endTag (length endTag)
     removePairTag'' :: String -> String -> String -> Int -> String
     removePairTag'' html startTag endTag endTagLen =
+        -- TODO check optimization where you offset start index by last remove of same tag and end index by start index
         case Utils.indexOf html startTag of
             Nothing -> html
             Just startIndex ->
-                case Utils.indexOfReverse html endTag of
+                case Utils.indexOf html endTag of
                     Nothing -> html
                     Just endIndex -> removePairTag'' (Utils.removeSubString html startIndex (endIndex + endTagLen)) startTag endTag endTagLen
 
