@@ -134,3 +134,19 @@ module Parser(main, parseJLFile) where
     removePairTags' html [] = html
     removePairTags' html tags = removePairTags' (removePairTag' html (fst tag) (snd tag)) (DL.tail tags)
         where tag = DL.head tags
+
+---------------------------------------------- TODO COLLECTION ----------------------------------------------
+
+-- uniqArrEl' :: Eq a => [a] -> [a]
+-- uniqArrEl' [] = []
+-- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
+
+------------- PARSER links
+-- parse content of href from html, store into another location under file with same name
+-- parse links from file
+
+------------- PARSER ADVANCED part
+-- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
+-- lowercase parser words
+-- order words alhabetical
+-- remove stop words (probably add better dic for stopwords)
