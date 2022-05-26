@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name: app
-version: 0.4.0
+version: 0.5.2
 synopsis: FP project
 homepage: https://github.com/xsivan/FP_haskell
 bug-reports: https://github.com/xsivan/FP_haskell/issues

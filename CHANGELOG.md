@@ -1,13 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] - 2022-05-26
+### Added
+- Utils funsions:
+   - putTimeDiffFormatted 
+   - lPadNumber 
+### Changed
+- Formatted text of parser. Log now includes duration of parse.
 
 ## [0.5.1] - 2022-05-26
 ### Changed
  - Update Index.hs
  - Update Utils.hs
  - Prepare funcionality for Pagerank
-
+ - Separated Index.hs into own module
 
 ## [0.5.0] - 2022-05-26
 ### Changed
@@ -19,8 +26,6 @@ All notable changes to this project will be documented in this file.
     - Add new functionalities for reverse index
  - Testing funcionality -> inverted_index.txt
  - Add parse-words to gitignore
-
-
 
 ## [0.4.1] - 2022-05-24
 ### Changed
@@ -96,6 +101,7 @@ All notable changes to this project will be documented in this file.
 - Readme file
 
 
+[0.5.2]: https://github.com/xsivan/FP_haskell/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/xsivan/FP_haskell/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/xsivan/FP_haskell/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/xsivan/FP_haskell/compare/0.4.0...0.4.1
