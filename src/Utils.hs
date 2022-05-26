@@ -16,6 +16,13 @@ module Utils(
     encodeFileName :: String -> String
     encodeFileName fileName = DBSC.unpack (Base64.encode (DBSC.pack fileName))
 
+    getListFiles :: FilePath -> IO [(Int, String)]
+    getListFiles direct = do
+        files <- SD.listDirectory direct
+        return $ getListFilesAddNumbers' files
+    getListFilesAddNumbers' :: [String] -> [(Int, String)]
+    getListFilesAddNumbers' = zip [1 ..]
+
     -- | Find index for first occurence of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOf :: String -> String -> Maybe Int
     indexOf haystick needle = indexOf' haystick needle 0
@@ -60,6 +67,9 @@ module Utils(
         where createDir = SD.createDirectory path  
               removeDir = SD.removeDirectoryRecursive path
 
+    readingList :: String -> [(Int, Float)]
+    readingList = read
+
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubString :: String -> Int -> Int -> String
     removeSubString text startIndex endIndex = concat [subString text 0 startIndex, subString text endIndex (length text)]
@@ -75,15 +85,4 @@ module Utils(
         exist <- SD.doesFileExist path
         if and [exist, matchSuffix] then return () else error errorMessage
         where matchSuffix = DL.isSuffixOf fileExtension path
-    
-    readingList :: String -> [(Int, Float)]
-    readingList = read
-
-    getListFiles :: FilePath -> IO [(Int, String)]
-    getListFiles direct = do
-        files <- SD.listDirectory direct
-        let numberedPages = addNumbers files
-        return numberedPages
-
-    addNumbers :: [String] -> [(Int, String)]
-    addNumbers = zip [1 ..]
+        
