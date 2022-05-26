@@ -58,7 +58,7 @@ module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, rec
         if and [exist, matchSuffix] then return () else error errorMessage
         where matchSuffix = DL.isSuffixOf fileExtension path
     
-    readingList :: String -> [(Int, Int)]
+    readingList :: String -> [(Int, Float)]
     readingList = read
 
     getListFiles :: FilePath -> IO [(Int, String)]

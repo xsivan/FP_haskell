@@ -60,6 +60,9 @@ module Index where
             return (words new_word)
                 
 
+    sortFloat :: Ord a1 => [(a2, a1)] -> [(a2, a1)]
+    sortFloat xs = sortBy (\(_, a) (_, b) -> compare a b) xs
+
     main :: IO()
     main =  do 
             word <- readWord
@@ -71,7 +74,7 @@ module Index where
             else do
                     writeFunction 1 (unwords word) 0
                     listOfFiles <- Utils.getListFiles "data/parse-words"
-                    let pagerank = zip [1..100] [100..200]
+                    let pagerank = zip [1..100] [0.01,0.02..1]
                     forM_ listOfFiles $  \file -> do
                                     handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
@@ -93,7 +96,7 @@ module Index where
                                     let id = length (splitOn " " (unwords word))
                                     let values = Utils.readingList (fileWords !! id)
                                     let removeTail = init values
-                                    let sortedValues = sortOn snd removeTail
+                                    let sortedValues = sortFloat removeTail
                                     getURL (unwords word) sortedValues
                             else return ()
                     else return ()
