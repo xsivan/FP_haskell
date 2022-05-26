@@ -1,7 +1,10 @@
-module Utils(decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recreateDir, removeSubString, subString, validateFile) where
+module Utils(
+    decodeFileName, encodeFileName, indexOf, indexOfReverse, lPadNumber, 
+    main, recreateDir, removeSubString, subString, validateFile
+) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, reverse, tail, take)
+    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, removeDirectoryRecursive)
 
     -- | Decodes hashed file name.
@@ -27,6 +30,10 @@ module Utils(decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recr
         case indexOf' (DL.reverse haystick) (DL.reverse needle) 0 of
             Nothing -> Nothing
             Just indexReversed -> Just $ (length haystick) - indexReversed - (length needle)
+
+    -- | LPad input string by requiredLen - len of string with padChar characters
+    lPadNumber :: String -> Int -> Char -> String
+    lPadNumber value requiredLen padChar = (\x -> DL.replicate (requiredLen - length x) padChar ++ x) value
 
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
