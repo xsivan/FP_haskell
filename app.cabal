@@ -28,9 +28,7 @@ executable parser
         directory,
         network-uri,
         tagsoup,
-        time,
-        split,
-        random
+        time
     default-language: Haskell2010
     ghc-options: -main-is Parser
     hs-source-dirs: src
@@ -49,3 +47,17 @@ executable utils
     ghc-options: -main-is Utils
     hs-source-dirs: src
     main-is: Utils.hs
+
+executable index
+    build-depends:
+        base ^>=4.16.1.0,
+        base64-bytestring,
+        bytestring,
+        containers,
+        directory,
+        split
+    default-language: Haskell2010
+    ghc-options: -main-is Utils
+    hs-source-dirs: src
+    main-is: Index.hs
+    other-modules: Utils
