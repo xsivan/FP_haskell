@@ -14,9 +14,24 @@ executable app
         base ^>=4.16.1.0,
         containers
     default-language: Haskell2010
-    ghc-options: -main-is App
+    ghc-options: -O2 -main-is App
     hs-source-dirs: src
     main-is: App.hs
+
+executable index
+    build-depends:
+        base ^>=4.16.1.0,
+        base64-bytestring,
+        bytestring,
+        containers,
+        directory,
+        split,
+        time
+    default-language: Haskell2010
+    ghc-options: -O2 -main-is Utils
+    hs-source-dirs: src
+    main-is: Index.hs
+    other-modules: Utils
 
 executable parser
     build-depends:
@@ -30,7 +45,7 @@ executable parser
         tagsoup,
         time
     default-language: Haskell2010
-    ghc-options: -main-is Parser
+    ghc-options: -O2 -main-is Parser
     hs-source-dirs: src
     main-is: Parser.hs
     other-extensions: DeriveGeneric, OverloadedStrings
@@ -45,20 +60,6 @@ executable utils
         directory,
         time,
     default-language: Haskell2010
-    ghc-options: -main-is Utils
+    ghc-options: -O2 -main-is Utils
     hs-source-dirs: src
     main-is: Utils.hs
-
-executable index
-    build-depends:
-        base ^>=4.16.1.0,
-        base64-bytestring,
-        bytestring,
-        containers,
-        directory,
-        split
-    default-language: Haskell2010
-    ghc-options: -main-is Utils
-    hs-source-dirs: src
-    main-is: Index.hs
-    other-modules: Utils
