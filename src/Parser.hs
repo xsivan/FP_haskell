@@ -6,13 +6,12 @@ module Parser(main, parseJLFile) where
     import qualified Data.Aeson as JSON(decode, parseJSON , object, FromJSON, Value(Object), (.:))
     import qualified Data.ByteString as DBS(fromStrict, hGetLine, ByteString)
     import qualified Data.List as DL(drop, head, intersperse, isSuffixOf, tail, words)
+    import qualified Data.Time as DT(UTCTime, getCurrentTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, hGetLine, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(innerText, parseTags)
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, recreateDir, removeSubString, subString, validateFile)
-    
-    import Data.Time -- TODo remove me later, dont forgot on cabal package time
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, putTimeDiffFormatted, recreateDir, removeSubString, subString, validateFile)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -51,44 +50,48 @@ module Parser(main, parseJLFile) where
         Utils.recreateDir destWordsDir
 
         fileHandle <- IO.openFile srcFile IO.ReadMode
-        parseJLLine' fileHandle destLinksDir destWordsDir 0
+        startTime <- DT.getCurrentTime
+
+        parseJLLine' fileHandle destLinksDir destWordsDir 0 startTime
 
     -- | Loops via lines of 'fileHandle' and per line calls parseJLineContent where pass parsed JSON object of that line
-    parseJLLine' :: IO.Handle -> FilePath -> FilePath -> Int -> IO()
-    parseJLLine' fileHandle destLinksDir destWordsDir processedLineNumber = do 
+    parseJLLine' :: IO.Handle -> FilePath -> FilePath -> Int -> DT.UTCTime -> IO()
+    parseJLLine' fileHandle destLinksDir destWordsDir processedLineNumber startTime = do 
         isFileEnd <- IO.hIsEOF fileHandle
         if isFileEnd then 
             putSection' "Parsing completed!"
         else do
             lineRaw <- DBS.hGetLine fileHandle
-            parseJLineContent' (JSON.decode (DBS.fromStrict lineRaw) :: Maybe JLLine) destLinksDir destWordsDir lineNumber
-            parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
+            parseJLineContent' (JSON.decode (DBS.fromStrict lineRaw) :: Maybe JLLine) destLinksDir destWordsDir lineNumber startTime
+            parseJLLine' fileHandle destLinksDir destWordsDir lineNumber startTime
 
         where lineNumber = processedLineNumber + 1
-    
+
     -- | In case that input parse content has data in valid format, calls `parseJLineHtmlContent`
     -- with dest paths defined as input dest dir path + MD5 hash of url from content data.
-    parseJLineContent' :: Maybe JLLine -> String -> String -> Int -> IO()
-    parseJLineContent' parseMaybe destLinksDir destWordsDir lineNumber =
+    parseJLineContent' :: Maybe JLLine -> String -> String -> Int -> DT.UTCTime -> IO()
+    parseJLineContent' parseMaybe destLinksDir destWordsDir lineNumber startTime =
         case parseMaybe of
-            Nothing -> print $ lineId ++ " - skipped, invalid JSON structure"
+            Nothing -> do 
+                Utils.putTimeDiffFormatted startTime
+                putStrLn $ lineId ++ " - skipped, invalid JSON structure"
             Just parse -> do
                 case cleanUrl' $ url parse of
-                    Nothing -> print $ lineId ++ " - skipped, contains invalid URL"
+                    Nothing -> do
+                        Utils.putTimeDiffFormatted startTime
+                        putStrLn $ lineId ++ " - skipped, contains invalid URL"
                     Just url -> do 
                         let fileName = Utils.encodeFileName url
-                        putStrLn $ lineId ++ " - " ++ url ++ " - starting parsing of html content."
-                        parseJLineHtmlContent' (html_content parse) (destLinksDir ++ "/" ++ fileName) (destWordsDir ++ "/" ++ fileName)             
+                        parseJLineHtmlContent' (html_content parse) (destLinksDir ++ "/" ++ fileName) (destWordsDir ++ "/" ++ fileName)     
+                        Utils.putTimeDiffFormatted startTime        
+                        putStrLn $ lineId ++ " - " ++ url ++ " - parsing complete."
 
-        where lineId = show lineNumber ++ ". line"
+        where lineId = " Line " ++ (show lineNumber) ++ "."
 
     -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
-        start <- getCurrentTime
         IO.writeFile destWordsFile (concat (DL.intersperse "\n" rawWordsString))
-        end <- getCurrentTime
-        print (diffUTCTime end start)
 
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
               rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent

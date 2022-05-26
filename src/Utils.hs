@@ -1,9 +1,13 @@
-module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recreateDir, removeSubString, subString, validateFile, getListFiles, readingList) where
+module Utils(
+    decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
+    main, putTimeDiffFormatted, readingList, recreateDir, removeSubString, subString, validateFile
+) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, reverse, tail, take)
-    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, removeDirectoryRecursive, listDirectory)
-
+    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
+    import qualified Data.Time as DT (UTCTime, diffUTCTime, getCurrentTime)
+    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
+    
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
     decodeFileName encodedFileName = DBSC.unpack (Base64.decodeLenient (DBSC.pack encodedFileName))
@@ -11,6 +15,13 @@ module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, rec
     -- | Hash filename.
     encodeFileName :: String -> String
     encodeFileName fileName = DBSC.unpack (Base64.encode (DBSC.pack fileName))
+
+    getListFiles :: FilePath -> IO [(Int, String)]
+    getListFiles direct = do
+        files <- SD.listDirectory direct
+        return $ getListFilesAddNumbers' files
+    getListFilesAddNumbers' :: [String] -> [(Int, String)]
+    getListFilesAddNumbers' = zip [1 ..]
 
     -- | Find index for first occurence of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOf :: String -> String -> Maybe Int
@@ -28,9 +39,23 @@ module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, rec
             Nothing -> Nothing
             Just indexReversed -> Just $ (length haystick) - indexReversed - (length needle)
 
+    -- | LPad input string by requiredLen - len of string with padChar characters
+    lPadNumber :: String -> Int -> Char -> String
+    lPadNumber value requiredLen padChar = (\x -> DL.replicate (requiredLen - length x) padChar ++ x) value
+
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
     main = do return ()
+
+    -- | Puts diff of start time and actual time on standard output in format [mm:ss]
+    putTimeDiffFormatted :: DT.UTCTime -> IO ()
+    putTimeDiffFormatted startTime = do
+        endTime <- DT.getCurrentTime
+        let diffSecondsRaw = floor (DT.diffUTCTime endTime startTime) :: Int
+        let diffMinutes = diffSecondsRaw `div` 60
+        let diffSeconds = diffSecondsRaw - (diffMinutes * 60)
+
+        putStr $ "[" ++ (Utils.lPadNumber (show diffMinutes) 2 '0') ++ ":" ++ Utils.lPadNumber (show diffSeconds) 2 '0' ++ "]"
 
     -- | ReCreates directory, that means if dir in 'path' exist remove it include its content and then create new one else only creates it.
     -- recreateDir :: FilePath -> IO ()
@@ -41,6 +66,9 @@ module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, rec
 
         where createDir = SD.createDirectory path  
               removeDir = SD.removeDirectoryRecursive path
+
+    readingList :: String -> [(Int, Float)]
+    readingList = read
 
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubString :: String -> Int -> Int -> String
@@ -57,15 +85,4 @@ module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, rec
         exist <- SD.doesFileExist path
         if and [exist, matchSuffix] then return () else error errorMessage
         where matchSuffix = DL.isSuffixOf fileExtension path
-    
-    readingList :: String -> [(Int, Float)]
-    readingList = read
-
-    getListFiles :: FilePath -> IO [(Int, String)]
-    getListFiles direct = do
-        files <- SD.listDirectory direct
-        let numberedPages = addNumbers files
-        return numberedPages
-
-    addNumbers :: [String] -> [(Int, String)]
-    addNumbers = zip [1 ..]
+        
