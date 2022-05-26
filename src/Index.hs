@@ -64,29 +64,39 @@ module Index where
                     let index = number - 1
                     let tmp = numberedFiles !! index
                     print (word ++ " --> " ++ snd tmp)
+    
+
+    lowercase :: String -> String
+    lowercase = map toLower 
+
+
+    readWord :: IO [String]
+    readWord = do
+            putStrLn "hladaj pre slovo"
+            word <- getLine
+            let new_word = lowercase word
+            return (words new_word)
                 
 
     main :: IO()
     main =  do 
-            putStrLn "hladaj pre slovo"
-            word <- getLine
-            let args = (" " ++ word ++ " ")
+            word <- readWord
             f <- openFile ("src/inverted_index.txt") ReadMode
             cnt <- hGetContents f
             let invertedContent = (unwords (lines cnt))
-            let finded = findWord word invertedContent
+            let finded = findWord ((unwords word) ++ " [") invertedContent
             if finded then hClose f
             else do
-                    writeWord word 
+                    writeWord (unwords word)
                     listOfFiles <- getListFiles "data/pages"
                     forM_ listOfFiles $  \file -> do
-                            handle <- openFile ("data/pages/" ++ snd file) ReadMode
-                            contents <- hGetContents handle
-                            let rnd = generateRandom (1,100)
-                            let found = (findWord args (unwords (lines contents)))
-                            if found then writeIndex (fst file) rnd
-                            else return ()
-                    
+                                    handle <- openFile ("data/pages" ++ snd file) ReadMode
+                                    contents <- hGetContents handle
+                                    let rnd = generateRandom (1,100)
+                                    let t = map (\w -> findWord w (unwords (lines contents))) word
+                                    let n = map (\bools -> if bools then 1 else 0) t
+                                    if length word == sum n then writeIndex (fst file) rnd else return()
+
                     writeNewLine "\n"
 
             contents <- readFile "src/inverted_index.txt"
@@ -94,14 +104,14 @@ module Index where
             forM_ listInverted $ \line -> do
                     let fileWords = words line
                     if fileWords /= [] then do
-                            let fword = (word ++ " ")
+                            let fword = ((unwords word) ++ " [")
                             let f = findWord' fword (unwords fileWords)
                             if f then do 
-                                    let id = length (splitOn " " word)
+                                    let id = length (splitOn " " (unwords word))
                                     let values = readingList (fileWords !! id)
                                     let removeTail = init values
                                     let sortedValues = sortOn snd removeTail
-                                    getURL word sortedValues
+                                    getURL (unwords word) sortedValues
                             else return ()
                     else return ()
                
