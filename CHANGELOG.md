@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2022-05-26
+### Changed
+ - Add new dependecies to cabal file
+ - Add new extension to devcontainer.json
+ - Update Index.hs:
+    - update funcionality for searching
+    - decode hashed pages to normal text
+    - Add new functionalities for reverse index
+ - Testing funcionality -> inverted_index.txt
+ - Add parse-words to gitignore
+
+
+
 ## [0.4.1] - 2022-05-24
 ### Changed
  - Fixed changelog typos 
@@ -74,6 +87,8 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
+
+[0.5.0]: https://github.com/xsivan/FP_haskell/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/xsivan/FP_haskell/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/xsivan/FP_haskell/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/xsivan/FP_haskell/compare/0.2.1...0.3.0
