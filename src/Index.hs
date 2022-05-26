@@ -13,19 +13,7 @@ module Index where
     import System.Random 
     import qualified Utils
 
-    readingList :: String -> [(Int, Int)]
-    readingList = read
-
-    getListFiles :: FilePath -> IO [(Int, String)]
-    getListFiles direct = do 
-                            files <- listDirectory direct
-                            let numberedPages = addNumbers files
-                            return numberedPages
-
-    addNumbers :: [String] -> [(Int, String)]
-    addNumbers = zip [1..]
-
-
+    
     findArguments :: Eq a => [a] -> [a] -> Maybe Int
     findArguments search str = (search `isPrefixOf`) `findIndex` (tails str)  
 
@@ -52,7 +40,7 @@ module Index where
 
     getURL :: Foldable t => [Char] -> t (Int, b) -> IO ()
     getURL word indexes = do
-            numberedFiles <- getListFiles "data/parse-words"
+            numberedFiles <- Utils.getListFiles "data/parse-words"
             forM_ indexes $  \index -> do
                     let number = fst index
                     let index = number - 1
@@ -82,7 +70,7 @@ module Index where
             if finded then hClose f
             else do
                     writeFunction 1 (unwords word) 0
-                    listOfFiles <- getListFiles "data/parse-words"
+                    listOfFiles <- Utils.getListFiles "data/parse-words"
                     forM_ listOfFiles $  \file -> do
                                     handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
@@ -102,7 +90,7 @@ module Index where
                             let f = findWord' fword (unwords fileWords)
                             if f then do 
                                     let id = length (splitOn " " (unwords word))
-                                    let values = readingList (fileWords !! id)
+                                    let values = Utils.readingList (fileWords !! id)
                                     let removeTail = init values
                                     let sortedValues = sortOn snd removeTail
                                     getURL (unwords word) sortedValues
