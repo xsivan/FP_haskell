@@ -28,9 +28,7 @@ executable parser
         directory,
         network-uri,
         tagsoup,
-        time,
-        split,
-        random
+        time
     default-language: Haskell2010
     ghc-options: -main-is Parser
     hs-source-dirs: src
