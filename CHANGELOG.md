@@ -1,8 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-<<<<<<< HEAD
-=======
+## [0.5.0] - 2022-05-26
+### Changed
+ - Add new dependecies to cabal file
+ - Add new extension to devcontainer.json
+ - Update Index.hs:
+    - update funcionality for searching
+    - decode hashed pages to normal text
+    - Add new functionalities for reverse index
+ - Testing funcionality -> inverted_index.txt
+ - Add parse-words to gitignore
+
+
+
 ## [0.4.1] - 2022-05-24
 ### Changed
  - Fixed changelog typos 
@@ -38,7 +49,6 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Data pages, input data will be added in the near future in differend format 
 
->>>>>>> b0c92ab4de870c683fb7faf439860652d34378ab
 ## [0.2.1] - 2022-05-08
 ### Changed
  - Versionning 
@@ -55,11 +65,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2022-05-06
 ### Added
-<<<<<<< HEAD
-- Setup of VS Code remote containers. It includes setup of haskell environment & VS code extensions to correctly work with haskell
-=======
 - Setup of VS Code remote containers. It includes setup of haskell environment and VS code extensions to correctly work with haskell
->>>>>>> b0c92ab4de870c683fb7faf439860652d34378ab
 - Real input data
 ### Changed
 - Readme file
@@ -81,29 +87,13 @@ All notable changes to this project will be documented in this file.
 - List of stop words
 - Readme file
 
-<<<<<<< HEAD
-## [0.0.3] - 2022-05-17
-### update cabal
-- add new dependencies
 
-## [1.0.0] - 2022-05-17
-### Add new file hs
-- Create Index.hs
-- Create inverted_index.txt
-- Add functionalities to Index.hs
-
-[1.0.0]: https://github.com/xsivan/FP_haskell/compare/0.0.0...1.0.0
-[0.2.1]: https://github.com/xsivan/FP_haskell/compare/0.2.0...0.2.1
-[0.2.0]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.2.0
-[0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.0.2...0.1.0
-[0.0.3]: https://github.com/xsivan/FP_haskell/compare/main...0.0.3
-=======
+[0.5.0]: https://github.com/xsivan/FP_haskell/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/xsivan/FP_haskell/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/xsivan/FP_haskell/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/xsivan/FP_haskell/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/xsivan/FP_haskell/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/xsivan/FP_haskell/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.0.2...0.1.0
->>>>>>> b0c92ab4de870c683fb7faf439860652d34378ab
 [0.0.2]: https://github.com/xsivan/FP_haskell/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/xsivan/FP_haskell/compare/0.0.0...0.0.1
