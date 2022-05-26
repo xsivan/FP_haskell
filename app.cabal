@@ -43,7 +43,7 @@ executable utils
         bytestring,
         containers,
         directory,
-        time,
+        time
     default-language: Haskell2010
     ghc-options: -main-is Utils
     hs-source-dirs: src
@@ -56,7 +56,8 @@ executable index
         bytestring,
         containers,
         directory,
-        split
+        split,
+        time
     default-language: Haskell2010
     ghc-options: -main-is Utils
     hs-source-dirs: src
