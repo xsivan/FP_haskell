@@ -1,12 +1,12 @@
 module Utils(
-    decodeFileName, encodeFileName, indexOf, indexOfReverse, lPadNumber, 
-    main, putTimeDiffFormatted, recreateDir, removeSubString, subString, validateFile
+    decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
+    main, putTimeDiffFormatted, readingList, recreateDir, removeSubString, subString, validateFile
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified Data.Time as DT (UTCTime, diffUTCTime, getCurrentTime)
-    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, removeDirectoryRecursive)
+    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
@@ -75,3 +75,15 @@ module Utils(
         exist <- SD.doesFileExist path
         if and [exist, matchSuffix] then return () else error errorMessage
         where matchSuffix = DL.isSuffixOf fileExtension path
+    
+    readingList :: String -> [(Int, Float)]
+    readingList = read
+
+    getListFiles :: FilePath -> IO [(Int, String)]
+    getListFiles direct = do
+        files <- SD.listDirectory direct
+        let numberedPages = addNumbers files
+        return numberedPages
+
+    addNumbers :: [String] -> [(Int, String)]
+    addNumbers = zip [1 ..]
