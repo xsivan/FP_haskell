@@ -1,4 +1,4 @@
-module Utils(decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recreateDir, removeSubString, subString, validateFile) where
+module Utils (decodeFileName, encodeFileName, indexOf, indexOfReverse, main, recreateDir, removeSubString, subString, validateFile, getListFiles, readingList) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, reverse, tail, take)
