@@ -10,7 +10,6 @@ module Index where
     import Control.Monad 
     import System.Environment
     import Data.List.Split
-    import System.Random 
     import qualified Utils
 
     
@@ -33,9 +32,6 @@ module Index where
         | id == 2 = appendFile "src/inverted_index.txt" $ ("(" ++ str  ++ "," ++ show pgr ++ "),")
         | id == 3 = appendFile "src/inverted_index.txt" $ "(0,0)]" ++ str
         | otherwise = print("Done")
-
-    generateRandom :: (Int,Int) -> Int
-    generateRandom (a,b) = unsafePerformIO (getStdRandom (randomR (a,b)))
 
 
     getURL :: Foldable t => [Char] -> t (Int, b) -> IO ()
