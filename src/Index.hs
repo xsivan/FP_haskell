@@ -11,7 +11,7 @@ module Index where
     import System.Environment
     import Data.List.Split
     import System.Random 
-
+    import qualified Utils
 
     readingList :: String -> [(Int, Int)]
     readingList = read
@@ -19,6 +19,7 @@ module Index where
     getListFiles :: FilePath -> IO [(Int, String)]
     getListFiles direct = do 
                             files <- listDirectory direct
+                            -- let decoded_files = map (\f -> Utils.decodeFileName f) files
                             let numberedPages = addNumbers files
                             return numberedPages
 
@@ -58,12 +59,12 @@ module Index where
 
     getURL :: Foldable t => [Char] -> t (Int, b) -> IO ()
     getURL word indexes = do
-            numberedFiles <- getListFiles "data/pages"
+            numberedFiles <- getListFiles "data/parse-words"
             forM_ indexes $  \index -> do
                     let number = fst index
                     let index = number - 1
                     let tmp = numberedFiles !! index
-                    print (word ++ " --> " ++ snd tmp)
+                    print (word ++ " --> " ++ Utils.decodeFileName (snd tmp))
     
 
     lowercase :: String -> String
@@ -88,9 +89,9 @@ module Index where
             if finded then hClose f
             else do
                     writeWord (unwords word)
-                    listOfFiles <- getListFiles "data/pages"
+                    listOfFiles <- getListFiles "data/parse-words"
                     forM_ listOfFiles $  \file -> do
-                                    handle <- openFile ("data/pages" ++ snd file) ReadMode
+                                    handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
                                     let rnd = generateRandom (1,100)
                                     let t = map (\w -> findWord w (unwords (lines contents))) word

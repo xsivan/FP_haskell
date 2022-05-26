@@ -62,7 +62,7 @@ module Parser(main, parseJLFile) where
         else do
             lineRaw <- DBS.hGetLine fileHandle
             parseJLineContent' (JSON.decode (DBS.fromStrict lineRaw) :: Maybe JLLine) destLinksDir destWordsDir lineNumber
-            -- parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
+            parseJLLine' fileHandle destLinksDir destWordsDir lineNumber
 
         where lineNumber = processedLineNumber + 1
     
