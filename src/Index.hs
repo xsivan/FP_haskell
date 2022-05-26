@@ -19,7 +19,6 @@ module Index where
     getListFiles :: FilePath -> IO [(Int, String)]
     getListFiles direct = do 
                             files <- listDirectory direct
-                            -- let decoded_files = map (\f -> Utils.decodeFileName f) files
                             let numberedPages = addNumbers files
                             return numberedPages
 
