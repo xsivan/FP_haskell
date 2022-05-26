@@ -1,12 +1,13 @@
 module Utils(
     decodeFileName, encodeFileName, indexOf, indexOfReverse, lPadNumber, 
-    main, recreateDir, removeSubString, subString, validateFile
+    main, putTimeDiffFormatted, recreateDir, removeSubString, subString, validateFile
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
+    import qualified Data.Time as DT (UTCTime, diffUTCTime, getCurrentTime)
     import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, removeDirectoryRecursive)
-
+    
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
     decodeFileName encodedFileName = DBSC.unpack (Base64.decodeLenient (DBSC.pack encodedFileName))
@@ -38,6 +39,16 @@ module Utils(
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
     main = do return ()
+
+    -- | Puts diff of start time and actual time on standard output in format [mm:ss]
+    putTimeDiffFormatted :: DT.UTCTime -> IO ()
+    putTimeDiffFormatted startTime = do
+        endTime <- DT.getCurrentTime
+        let diffSecondsRaw = floor (DT.diffUTCTime endTime startTime) :: Int
+        let diffMinutes = diffSecondsRaw `div` 60
+        let diffSeconds = diffSecondsRaw - (diffMinutes * 60)
+
+        putStr $ "[" ++ (Utils.lPadNumber (show diffMinutes) 2 '0') ++ ":" ++ Utils.lPadNumber (show diffSeconds) 2 '0' ++ "]"
 
     -- | ReCreates directory, that means if dir in 'path' exist remove it include its content and then create new one else only creates it.
     -- recreateDir :: FilePath -> IO ()
