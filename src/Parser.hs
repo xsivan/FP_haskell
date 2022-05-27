@@ -8,12 +8,12 @@ module Parser(main, parseJLFile) where
     import qualified Data.List as DL(drop, intersperse, isPrefixOf, isSuffixOf, words)
     import qualified Data.Maybe as DM(catMaybes)
     import qualified Data.String as DS(IsString)
-    import qualified Data.Time as DT(getCurrentTime, UTCTime)
+    import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(fromAttrib, innerText, isTagOpenName, parseTags, Tag(TagOpen))
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, putTimeDiffFormatted, recreateDir, subString, toLowerStringArr, uniqArr, validateFile)
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -24,11 +24,6 @@ module Parser(main, parseJLFile) where
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
     main = do return ()
-
-    -- TODO remove later
-    test :: IO ()
-    test = do
-        parseJLFile "/opt/app/data/collection_100.jl" "/opt/app/data/parse-links" "/opt/app/data/parse-words"
 
     -- | Removes all parts of url except its domain and sub-page and return it.
     cleanUrl' :: String -> Maybe String
@@ -80,17 +75,17 @@ module Parser(main, parseJLFile) where
     parseJLineContent' parseMaybe destLinksDir destWordsDir lineNumber startTime =
         case parseMaybe of
             Nothing -> do 
-                Utils.putTimeDiffFormatted startTime
+                putTimeDiffFormatted' startTime
                 putStrLn $ lineId ++ " - skipped, invalid JSON structure"
             Just parse -> do
                 case cleanUrl' $ url parse of
                     Nothing -> do
-                        Utils.putTimeDiffFormatted startTime
+                        putTimeDiffFormatted' startTime
                         putStrLn $ lineId ++ " - skipped, contains invalid URL"
                     Just urlVal -> do 
                         let fileName = Utils.encodeFileName urlVal
                         parseJLineHtmlContent' (html_content parse) (destLinksDir ++ "/" ++ fileName) (destWordsDir ++ "/" ++ fileName)     
-                        Utils.putTimeDiffFormatted startTime 
+                        putTimeDiffFormatted' startTime 
                         putStrLn $ lineId ++ " - " ++ urlVal ++ " - parsing complete."
 
         where lineId = " Line " ++ (show lineNumber) ++ "."
@@ -123,6 +118,16 @@ module Parser(main, parseJLFile) where
     -- | Put simle section separator to output.
     putSectionSeparator' :: IO ()
     putSectionSeparator' = IO.putStrLn "----------------------------------------------------------------------------------------------------"
+
+    -- | Puts diff of start time and actual time on standard output in format [mm:ss]
+    putTimeDiffFormatted' :: DT.UTCTime -> IO ()
+    putTimeDiffFormatted' startTime = do
+        endTime <- DT.getCurrentTime
+        let diffSecondsRaw = floor (DT.diffUTCTime endTime startTime) :: Int
+        let diffMinutes = diffSecondsRaw `div` 60
+        let diffSeconds = diffSecondsRaw - (diffMinutes * 60)
+
+        putStr $ "[" ++ (Utils.lPadNumber (show diffMinutes) 2 '0') ++ ":" ++ Utils.lPadNumber (show diffSeconds) 2 '0' ++ "]"
 
     -- | Removes all content of 'tags' from 'html'.
     removePairTags' :: String -> [String] -> String
