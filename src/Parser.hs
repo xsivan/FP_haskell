@@ -3,15 +3,17 @@
 
 module Parser(main, parseJLFile) where
     import qualified Control.Applicative as CA(empty)
-    import qualified Data.Aeson as JSON(decode, parseJSON, FromJSON, Value(Object), (.:))
+    import qualified Data.Aeson as JSON(decode, parseJSON, (.:), FromJSON, Value(Object))
     import qualified Data.ByteString as DBS(fromStrict, hGetLine)
     import qualified Data.List as DL(drop, intersperse, isPrefixOf, isSuffixOf, words)
-    import qualified Data.Time as DT(UTCTime, getCurrentTime)
+    import qualified Data.Maybe as DM(catMaybes)
+    import qualified Data.String as DS(IsString)
+    import qualified Data.Time as DT(getCurrentTime, UTCTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
-    import qualified Text.HTML.TagSoup as TS(innerText, parseTags)
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, putTimeDiffFormatted, recreateDir, subString, validateFile)
+    import qualified Text.HTML.TagSoup as TS(fromAttrib, innerText, isTagOpenName, parseTags, Tag(TagOpen))
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, putTimeDiffFormatted, recreateDir, subString, toLowerStringArr, uniqArr, validateFile)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -39,6 +41,11 @@ module Parser(main, parseJLFile) where
                     let parsedUrl = NW.uriRegName auth ++ NW.uriPath uri
                     if "/" `DL.isSuffixOf`parsedUrl then Just parsedUrl
                     else Just $ parsedUrl ++ "/"
+
+    -- | Determinates if tag is <a> with href.
+    isTagLinkWithHref' :: (Eq b, DS.IsString b) => TS.Tag b -> Bool
+    isTagLinkWithHref' tag@(TS.TagOpen _ content) = "a" `TS.isTagOpenName` tag && not (null content) && ((=="href") . fst $ head content)
+    isTagLinkWithHref' _ = False
 
     -- | Loops via lines of 'srcFile'.jl file, from each line extract words and links of html and links and store it into 'destWordsDir' and 'destLinksDir' location
     -- 
@@ -91,11 +98,13 @@ module Parser(main, parseJLFile) where
     -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
-        IO.writeFile destWordsFile (concat (DL.intersperse "\n" rawWordsString))
+        IO.writeFile destLinksFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr links)))
+        IO.writeFile destWordsFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
         
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
-              rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
+              links = DM.catMaybes (map (\x -> (cleanUrl' x)) ((map (TS.fromAttrib ("href" :: String)).filter isTagLinkWithHref'.TS.parseTags) clanedBodyContent))
               tagsToRemove = ["script", "style","noscript"]
+              words = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
 
     -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
     pickPairTagContent' :: String -> String -> String -> String
@@ -141,19 +150,3 @@ module Parser(main, parseJLFile) where
     removePairTagsMatchStart' html (t:ags)
         | t `DL.isPrefixOf` html = Just t
         | otherwise = removePairTagsMatchStart' html ags
-
----------------------------------------------- TODO COLLECTION ----------------------------------------------
-
--- uniqArrEl' :: Eq a => [a] -> [a]
--- uniqArrEl' [] = []
--- uniqArrEl' (x:xs) = x : uniqArrEl' (DL.filter (/=x) xs)
-
-------------- PARSER links
--- parse content of href from html, store into another location under file with same name
--- parse links from file
-
-------------- PARSER ADVANCED part
--- remove dots, comas, etc from parsed text (probably replace for space, if next or prev char is no space)
--- lowercase parser words
--- order words alhabetical
--- remove stop words (probably add better dic for stopwords)
