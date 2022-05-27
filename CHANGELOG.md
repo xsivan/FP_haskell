@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.3] - 2022-05-27
+### Changed
+- Significantly optimized time complexity of removePairTags function.
+- Project now default enables -Wall ghc option
+- Project now default enables O2 ghc optimization
+
 ## [0.5.2] - 2022-05-26
 ### Added
 - Utils funsions:
@@ -101,6 +107,7 @@ All notable changes to this project will be documented in this file.
 - Readme file
 
 
+[0.5.3]: https://github.com/xsivan/FP_haskell/compare/0.5.2...0.5.3
 [0.5.2]: https://github.com/xsivan/FP_haskell/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/xsivan/FP_haskell/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/xsivan/FP_haskell/compare/0.4.1...0.5.0

@@ -3,15 +3,15 @@
 
 module Parser(main, parseJLFile) where
     import qualified Control.Applicative as CA(empty)
-    import qualified Data.Aeson as JSON(decode, parseJSON , object, FromJSON, Value(Object), (.:))
-    import qualified Data.ByteString as DBS(fromStrict, hGetLine, ByteString)
-    import qualified Data.List as DL(drop, head, intersperse, isSuffixOf, tail, words)
+    import qualified Data.Aeson as JSON(decode, parseJSON, FromJSON, Value(Object), (.:))
+    import qualified Data.ByteString as DBS(fromStrict, hGetLine)
+    import qualified Data.List as DL(drop, intersperse, isPrefixOf, isSuffixOf, words)
     import qualified Data.Time as DT(UTCTime, getCurrentTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
-    import qualified System.IO as IO(hIsEOF, hGetLine, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
+    import qualified System.IO as IO(hIsEOF, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(innerText, parseTags)
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, putTimeDiffFormatted, recreateDir, removeSubString, subString, validateFile)
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, putTimeDiffFormatted, recreateDir, subString, validateFile)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -30,8 +30,8 @@ module Parser(main, parseJLFile) where
 
     -- | Removes all parts of url except its domain and sub-page and return it.
     cleanUrl' :: String -> Maybe String
-    cleanUrl' url =
-        case NW.parseURI url of
+    cleanUrl' urlValue =
+        case NW.parseURI urlValue of
             Nothing -> Nothing
             Just uri -> case NW.uriAuthority uri of
                 Nothing -> Nothing
@@ -80,11 +80,11 @@ module Parser(main, parseJLFile) where
                     Nothing -> do
                         Utils.putTimeDiffFormatted startTime
                         putStrLn $ lineId ++ " - skipped, contains invalid URL"
-                    Just url -> do 
-                        let fileName = Utils.encodeFileName url
+                    Just urlVal -> do 
+                        let fileName = Utils.encodeFileName urlVal
                         parseJLineHtmlContent' (html_content parse) (destLinksDir ++ "/" ++ fileName) (destWordsDir ++ "/" ++ fileName)     
-                        Utils.putTimeDiffFormatted startTime        
-                        putStrLn $ lineId ++ " - " ++ url ++ " - parsing complete."
+                        Utils.putTimeDiffFormatted startTime 
+                        putStrLn $ lineId ++ " - " ++ urlVal ++ " - parsing complete."
 
         where lineId = " Line " ++ (show lineNumber) ++ "."
 
@@ -92,10 +92,10 @@ module Parser(main, parseJLFile) where
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
         IO.writeFile destWordsFile (concat (DL.intersperse "\n" rawWordsString))
-
+        
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
               rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
-              tagsToRemove = [("<noscript", "</noscript>"), ("<script", "</script>"), ("<style", "</style>")]
+              tagsToRemove = ["script", "style","noscript"]
 
     -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
     pickPairTagContent' :: String -> String -> String -> String
@@ -115,28 +115,32 @@ module Parser(main, parseJLFile) where
     putSectionSeparator' :: IO ()
     putSectionSeparator' = IO.putStrLn "----------------------------------------------------------------------------------------------------"
 
-    -- | Removes all occurences of content between 'startTag' and 'endTag' from 'html'.
-    removePairTag' :: String -> String -> String -> String
-    removePairTag' html startTag endTag = removePairTag'' html startTag endTag (length endTag) 0
-    removePairTag'' :: String -> String -> String -> Int -> Int -> String
-    removePairTag'' html startTag endTag endTagLen offset = do
-        let offsetHtml = DL.drop offset html
-        case Utils.indexOf offsetHtml startTag of
-            Nothing -> html
-            Just startIndex -> do
-                let startOffsetHtml = DL.drop startIndex offsetHtml
-                case Utils.indexOf startOffsetHtml endTag of
-                    Nothing -> html
-                    Just endIndex -> do
-                        removePairTag'' (Utils.removeSubString html rStartIndex rEndIndex) startTag endTag endTagLen (offset + startIndex)
-                        where rEndIndex = startIndex + offset + endIndex + endTagLen
-                              rStartIndex = startIndex + offset
+    -- | Removes all content of 'tags' from 'html'.
+    removePairTags' :: String -> [String] -> String
+    removePairTags' html tags = removePairTags'' html tags Nothing
+    removePairTags'' :: String -> [String] -> Maybe String -> String
+    removePairTags'' [] _ _ = ""
+    removePairTags'' (h:tml) tags foundStartTag =
+        case foundStartTag of
+            Nothing -> 
+                if h == '<' 
+                    then case removePairTagsMatchStart' tml tags of
+                        Nothing -> [h] ++ removePairTags'' tml tags Nothing
+                        Just startTag -> removePairTags'' (DL.drop (length $ startTag ++ ">") tml) tags (Just startTag)
+                else [h] ++ removePairTags'' tml tags foundStartTag
+            Just startTag -> do
+                let endTag = "/" ++ startTag ++ ">"
 
-    -- | Removes all occurences of content between start and end of all tags defines inside 'tags' in format: [(startTag1, endTag1), (...)] from 'html'.
-    removePairTags' :: String -> [(String , String)] -> String
-    removePairTags' html [] = html
-    removePairTags' html tags = removePairTags' (removePairTag' html (fst tag) (snd tag)) (DL.tail tags)
-        where tag = DL.head tags
+                if and [h == '<', endTag `DL.isPrefixOf` tml] 
+                    then removePairTags'' (DL.drop (length endTag) tml) tags Nothing
+                else removePairTags'' tml tags foundStartTag
+
+    -- | Returns first tag of `t:ags` which start `html` content.
+    removePairTagsMatchStart' :: String -> [String] -> Maybe String
+    removePairTagsMatchStart' _ [] = Nothing
+    removePairTagsMatchStart' html (t:ags)
+        | t `DL.isPrefixOf` html = Just t
+        | otherwise = removePairTagsMatchStart' html ags
 
 ---------------------------------------------- TODO COLLECTION ----------------------------------------------
 
