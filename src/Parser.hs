@@ -95,7 +95,7 @@ module Parser(main, parseJLFile) where
         
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
               rawWordsString = DL.words . TS.innerText $ TS.parseTags clanedBodyContent
-              tagsToRemove = ["style", "script", "noscript"]
+              tagsToRemove = ["script", "style","noscript"]
 
     -- | Picks content from first occurence of 'startTag' to first occurence of 'endTag'
     pickPairTagContent' :: String -> String -> String -> String
