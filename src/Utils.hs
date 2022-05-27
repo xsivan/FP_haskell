@@ -1,11 +1,12 @@
 module Utils(
     decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
-    main, putTimeDiffFormatted, readingList, recreateDir, removeSubString, subString, validateFile
+    main, putTimeDiffFormatted, readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
-    import qualified Data.List as DL(drop, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
-    import qualified Data.Time as DT (UTCTime, diffUTCTime, getCurrentTime)
+    import qualified Data.Char as DC(toLower)
+    import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
+    import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
     import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     
     -- | Decodes hashed file name.
@@ -74,9 +75,24 @@ module Utils(
     removeSubString :: String -> Int -> Int -> String
     removeSubString text startIndex endIndex = concat [subString text 0 startIndex, subString text endIndex (length text)]
 
+    -- | Transformes string array to lowercase
+    toLowerStringArr :: [String] -> [String]
+    toLowerStringArr [] = []
+    toLowerStringArr (a:bc) = (toLowerString a) : toLowerStringArr bc
+
+    -- | Transformes string to lowercase
+    toLowerString :: String -> String
+    toLowerString [] = []
+    toLowerString (s:tring) = (DC.toLower s) : toLowerString tring
+
     -- | Returns content from 'startIndex' to 'endIndex' in 'text'.
     subString :: String -> Int -> Int -> String
     subString text startIndex endIndex = DL.take(endIndex - startIndex) (DL.drop startIndex text)
+
+    -- | Removes duplicates from array
+    uniqArr :: [String] -> [String]
+    uniqArr [] = []
+    uniqArr (x:xs) = x : uniqArr(DL.filter (/=x) xs)
 
     -- | Validates existence of file via 'path' and its extension match.
     -- If 'path' or extension is not correct throw error with specific 'errorMessage', else do nothing.
