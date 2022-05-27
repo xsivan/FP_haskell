@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.4] - 2022-05-27
+### Changed
+- Fixing some warnings
+- Remove unused libraries 
+
+
 ## [0.5.3] - 2022-05-27
 ### Changed
 - Significantly optimized time complexity of removePairTags function.
@@ -107,6 +113,7 @@ All notable changes to this project will be documented in this file.
 - Readme file
 
 
+[0.5.4]: https://github.com/xsivan/FP_haskell/compare/0.5.3...0.5.4
 [0.5.3]: https://github.com/xsivan/FP_haskell/compare/0.5.2...0.5.3
 [0.5.2]: https://github.com/xsivan/FP_haskell/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/xsivan/FP_haskell/compare/0.5.0...0.5.1
