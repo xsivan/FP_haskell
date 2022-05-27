@@ -8,7 +8,7 @@ license: MIT
 license-file: LICENSE
 synopsis: FP project
 name: app
-version: 0.5.3
+version: 0.6.0
 
 executable app
     build-depends:

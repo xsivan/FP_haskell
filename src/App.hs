@@ -6,11 +6,12 @@ module App(main, initApp, searchText) where
     -- Example: initApp "\/opt\/app\/data\/collection_100.jl" "\/opt\/app/data\/parse-links" "\/opt\/app\/data\/parse-words"
     initApp :: FilePath -> FilePath -> FilePath -> IO ()
     initApp srcFile destLinksDir destWordsDir = Parser.parseJLFile srcFile destLinksDir destWordsDir
+    -- TODO init other stuff as index
 
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
     main = do return ()
 
-    -- | TODO
+    -- | Search text occurences on the parsed pages
     searchText :: FilePath -> FilePath -> FilePath -> IO ()
     searchText text parseLinksDir parseWordsDir = putStrLn ("Not implemented - " ++ text ++ " - "  ++ parseLinksDir  ++ " - " ++ parseWordsDir)
