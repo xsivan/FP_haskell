@@ -58,8 +58,7 @@ executable utils
         base64-bytestring,
         bytestring,
         containers,
-        directory,
-        time
+        directory
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
