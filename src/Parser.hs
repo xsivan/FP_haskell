@@ -26,7 +26,7 @@ module Parser(main, parseJLFile) where
     -- TODO remove later
     test :: IO ()
     test = do
-        parseJLFile "/opt/app/data/collection_100.jl" "/opt/app/data/parse-links" "/opt/app/data/parse-words"
+        parseJLFile "C:/Users/Admin/Visual Studio Code Projects/FP_haskell-main/data/collection_100.jl" "C:/Users/Admin/Visual Studio Code Projects/FP_haskell-main/data/parse-links" "C:/Users/Admin/Visual Studio Code Projects/FP_haskell-main/data/parse-words"
 
     -- | Removes all parts of url except its domain and sub-page and return it.
     cleanUrl' :: String -> Maybe String
