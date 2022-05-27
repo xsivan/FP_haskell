@@ -1,20 +1,21 @@
 cabal-version: 2.4
-name: app
-version: 0.5.2
-synopsis: FP project
-homepage: https://github.com/xsivan/FP_haskell
+
+author: Luxao, Svidran, Ivan
 bug-reports: https://github.com/xsivan/FP_haskell/issues
+extra-source-files: CHANGELOG.md
+homepage: https://github.com/xsivan/FP_haskell
 license: MIT
 license-file: LICENSE
-author: Luxao, Svidran, Ivan
-extra-source-files: CHANGELOG.md
+synopsis: FP project
+name: app
+version: 0.5.2
 
 executable app
     build-depends:
         base ^>=4.16.1.0,
         containers
     default-language: Haskell2010
-    ghc-options: -O2 -main-is App
+    ghc-options: -W
     hs-source-dirs: src
     main-is: App.hs
 
@@ -28,7 +29,7 @@ executable index
         split,
         time
     default-language: Haskell2010
-    ghc-options: -O2 -main-is Index
+    ghc-options: -W
     hs-source-dirs: src
     main-is: Index.hs
     other-modules: Utils
@@ -45,7 +46,7 @@ executable parser
         tagsoup,
         time
     default-language: Haskell2010
-    ghc-options: -O2 -main-is Parser
+    ghc-options: -W
     hs-source-dirs: src
     main-is: Parser.hs
     other-extensions: DeriveGeneric, OverloadedStrings
@@ -60,6 +61,6 @@ executable utils
         directory,
         time
     default-language: Haskell2010
-    ghc-options: -O2 -main-is Utils
+    ghc-options: -W
     hs-source-dirs: src
     main-is: Utils.hs
