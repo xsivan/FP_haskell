@@ -1,22 +1,16 @@
-module App where
-    import System.IO
-    import Data.List
-    import Data.Char (isAlpha, toLower, isSpace)
-    import qualified Data.Set
-    import qualified Data.Map as Map 
+module App(main, initApp, searchText) where
+    import qualified Parser(parseJLFile)
 
-    main :: IO()
-    main = do
-            tmp <- removeStopWords
-            print (tmp)
+    -- | Parse file and initialize app for search. Format: initApp sourceJlFilePath parseLinksDestDir parseWordsDestDir
+    --
+    -- Example: initApp "\/opt\/app\/data\/collection_100.jl" "\/opt\/app/data\/parse-links" "\/opt\/app\/data\/parse-words"
+    initApp :: FilePath -> FilePath -> FilePath -> IO ()
+    initApp srcFile destLinksDir destWordsDir = Parser.parseJLFile srcFile destLinksDir destWordsDir
 
-    removeStopWords :: IO [String]
-    removeStopWords = do  
-                putStrLn "nacitaj file"   
-                handle <- readFile "src/stopwords.txt"
-                file <- getLine
-                hndl <- readFile file
-                return (toWords hndl (lines handle))
+    -- | Defined only as cabal requirement, does nothing.
+    main :: IO ()
+    main = do return ()
 
-    toWords :: String -> [String] -> [String]
-    toWords s list = filter (\w -> w `notElem` list) (words s)
+    -- | TODO
+    searchText :: FilePath -> FilePath -> FilePath -> IO ()
+    searchText text parseLinksDir parseWordsDir = putStrLn ("Not implemented - " ++ text ++ " - "  ++ parseLinksDir  ++ " - " ++ parseWordsDir)
