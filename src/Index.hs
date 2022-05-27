@@ -1,15 +1,13 @@
 module Index where
-    import System.IO
-    import System.IO.Unsafe
-    import System.IO.Error
-    import Data.List
-    import Data.Char (isAlpha, toLower, isSpace)
-    import qualified Data.Set
-    import qualified Data.Map as Map 
-    import System.Directory
-    import Control.Monad 
-    import System.Environment
-    import Data.List.Split
+    import System.IO( hClose, hGetContents, openFile, IOMode(ReadMode) )
+    import System.IO.Unsafe ()
+    import System.IO.Error ()
+    import Data.List ( findIndex, isPrefixOf, sortBy, tails )
+    import Data.Char ( toLower ) 
+    import System.Directory ()
+    import Control.Monad ( forM_ ) 
+    import System.Environment ()
+    import Data.List.Split ( splitOn )
     import qualified Utils
 
     
@@ -22,7 +20,7 @@ module Index where
     findWord :: Eq a => [a] -> [a] -> Bool
     findWord terms text = do
             case findArguments terms text of
-                    Just value -> True
+                    Just _ -> True
                     Nothing -> False
 
 
