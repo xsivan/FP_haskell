@@ -11,7 +11,7 @@ module Parser(parseJLFile) where
     import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
-    import qualified System.IO as IO(hIsEOF, openFile, putStrLn, Handle, IOMode(ReadMode))
+    import qualified System.IO as IO(hClose, hIsEOF, openFile, putStrLn, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(fromAttrib, innerText, isTagOpenName, parseTags, Tag(TagOpen))
     import qualified Utils as Utils(encodeFileName, getParseLinksPath, getParseWordsPath, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile, writeToFileUTF8)
     
@@ -48,6 +48,7 @@ module Parser(parseJLFile) where
         fileHandle <- IO.openFile srcFile IO.ReadMode
         startTime <- DT.getCurrentTime
         parseJLLine' fileHandle linksPath wordsPath 0 startTime
+        IO.hClose fileHandle
 
         where linksPath = Utils.getParseLinksPath
               wordsPath = Utils.getParseWordsPath

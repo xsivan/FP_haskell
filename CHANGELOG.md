@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Update indexing docId
 - Fixing minor warnings
 - Fixed issue with fileWrite of special characters on windows
+- Fixed unclosed file handles
 
 ## [0.6.0] - 2022-05-27
 ### Added

@@ -7,7 +7,7 @@ module Utils(
     import qualified Data.Char as DC(toLower)
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
-    import qualified System.IO as IO(hPutStr, hSetEncoding, openFile, utf8, IOMode(WriteMode))
+    import qualified System.IO as IO(hClose, hPutStr, hSetEncoding, openFile, utf8, IOMode(WriteMode))
     
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
@@ -115,3 +115,4 @@ module Utils(
         fileHandle <- IO.openFile filePath IO.WriteMode
         IO.hSetEncoding fileHandle IO.utf8
         IO.hPutStr fileHandle content
+        IO.hClose fileHandle
