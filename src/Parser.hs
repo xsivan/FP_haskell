@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Parser(main, parseJLFile) where
+module Parser(parseJLFile) where
     import qualified Control.Applicative as CA(empty)
     import qualified Data.Aeson as JSON(decode, parseJSON, (.:), FromJSON, Value(Object))
     import qualified Data.ByteString as DBS(fromStrict, hGetLine)
@@ -20,10 +20,6 @@ module Parser(main, parseJLFile) where
     instance JSON.FromJSON JLLine where
         parseJSON (JSON.Object v) = JLLine <$> v JSON..: "html_content" <*> v JSON..: "url"
         parseJSON _ = CA.empty
-
-    -- | Defined only as cabal requirement, does nothing.
-    main :: IO ()
-    main = do return ()
 
     -- | Removes all parts of url except its domain and sub-page and return it.
     cleanUrl' :: String -> Maybe String

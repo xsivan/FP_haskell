@@ -1,12 +1,12 @@
 module Utils(
     decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
-    main, readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
+    readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.Char as DC(toLower)
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
-    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
+    import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
@@ -43,10 +43,6 @@ module Utils(
     lPadNumber :: String -> Int -> Char -> String
     lPadNumber value requiredLen padChar = (\x -> DL.replicate (requiredLen - length x) padChar ++ x) value
 
-    -- | Defined only as cabal requirement, does nothing.
-    main :: IO ()
-    main = do return ()
-
     -- | ReCreates directory, that means if dir in 'path' exist remove it include its content and then create new one else only creates it.
     -- recreateDir :: FilePath -> IO ()
     recreateDir :: FilePath -> IO ()
@@ -54,7 +50,7 @@ module Utils(
         exist <- SD.doesDirectoryExist path
         if exist then (>>) removeDir createDir else createDir
 
-        where createDir = SD.createDirectory path  
+        where createDir = SD.createDirectoryIfMissing True path  
               removeDir = SD.removeDirectoryRecursive path
 
     readingList :: String -> [(Int, Float)]
