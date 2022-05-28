@@ -1,15 +1,13 @@
 module Index where
-    import System.IO
-    import System.IO.Unsafe
-    import System.IO.Error
-    import Data.List
-    import Data.Char (isAlpha, toLower, isSpace)
-    import qualified Data.Set
-    import qualified Data.Map as Map 
-    import System.Directory
-    import Control.Monad 
-    import System.Environment
-    import Data.List.Split
+    import System.IO( hClose, hGetContents, openFile, IOMode(ReadMode) )
+    import System.IO.Unsafe ()
+    import System.IO.Error ()
+    import Data.List ( findIndex, isPrefixOf, sortBy, tails )
+    import Data.Char ( toLower ) 
+    import System.Directory ()
+    import Control.Monad ( forM_ ) 
+    import System.Environment ()
+    import Data.List.Split ( splitOn )
     import qualified Utils
 
     
@@ -22,7 +20,7 @@ module Index where
     findWord :: Eq a => [a] -> [a] -> Bool
     findWord terms text = do
             case findArguments terms text of
-                    Just value -> True
+                    Just _ -> True
                     Nothing -> False
 
 
@@ -57,7 +55,8 @@ module Index where
                 
 
     sortFloat :: Ord a1 => [(a2, a1)] -> [(a2, a1)]
-    sortFloat xs = sortBy (\(_, a) (_, b) -> compare a b) xs
+    sortFloat xs = reverse (sortBy (\(_, a) (_, b) -> compare a b) xs)
+ 
 
     main :: IO()
     main =  do 
@@ -70,14 +69,14 @@ module Index where
             else do
                     writeFunction 1 (unwords word) 0
                     listOfFiles <- Utils.getListFiles "data/parse-words"
-                    let pagerank = zip [1..100] [0.01,0.02..1]
+                    let pagerank = zip [1..100] [0.01,0.02..1] -- There will be pagerank function
                     forM_ listOfFiles $  \file -> do
                                     handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
-                                    let rnd = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) pagerank
+                                    let page_rank = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) pagerank
                                     let t = map (\w -> findWord w (unwords (lines contents))) word
                                     let n = map (\bools -> if bools then 1 else 0) t
-                                    if length word == sum n then writeFunction 2 (show (fst file)) (sum rnd) else return ()
+                                    if length word == sum n then writeFunction 2 (show (fst file)) (sum page_rank) else return ()
 
                     writeFunction 3 "\n" 0
 
