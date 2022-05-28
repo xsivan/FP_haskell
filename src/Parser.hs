@@ -11,9 +11,9 @@ module Parser(parseJLFile) where
     import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
-    import qualified System.IO as IO(hIsEOF, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
+    import qualified System.IO as IO(hIsEOF, openFile, putStrLn, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(fromAttrib, innerText, isTagOpenName, parseTags, Tag(TagOpen))
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile)
+    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile, writeToFileUTF8)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -89,8 +89,8 @@ module Parser(parseJLFile) where
     -- | Parse links and words from html content and store it into files defined in `destLinksDir` and `destWordsDir`
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
-        IO.writeFile destLinksFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr links)))
-        IO.writeFile destWordsFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
+        Utils.writeToFileUTF8 destLinksFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr links)))
+        Utils.writeToFileUTF8 destWordsFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
         
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
               links = DM.catMaybes (map (\x -> (cleanUrl' x)) ((map (TS.fromAttrib ("href" :: String)).filter isTagLinkWithHref'.TS.parseTags) clanedBodyContent))

@@ -4,12 +4,17 @@ All notable changes to this project will be documented in this file.
 ## [1.0.0] - 2022-05-28
 ### Added
 - Add functionality to get Pagerank
+- Implemented core functionality into App
+- Utils functions :
+  - getParseLinksPath
+  - getParseWordsPath
+  - writeToFileUTF8
 ### Changed
 - Move Index.hs functionality to App.hs
 - Update Index.hs
 - Merged with pagerank.hs
-- Update indexing docId 
-
+- Update indexing docId
+- Fixing minor warnings
 
 ## [0.6.0] - 2022-05-27
 ### Added
@@ -135,6 +140,7 @@ All notable changes to this project will be documented in this file.
 - Readme file
 
 
+[0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.6.0...1.0.0
 [0.6.0]: https://github.com/xsivan/FP_haskell/compare/0.5.4...0.6.0
 [0.5.4]: https://github.com/xsivan/FP_haskell/compare/0.5.3...0.5.4
 [0.5.3]: https://github.com/xsivan/FP_haskell/compare/0.5.2...0.5.3
