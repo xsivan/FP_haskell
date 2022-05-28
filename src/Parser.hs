@@ -9,6 +9,7 @@ module Parser(parseJLFile) where
     import qualified Data.Maybe as DM(catMaybes)
     import qualified Data.String as DS(IsString)
     import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
+    import qualified System.IO as IO(hIsEOF, openFile, hPutStr, putStrLn, hSetEncoding, withFile, writeFile, utf8, Handle, IOMode(ReadMode, WriteMode))
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, openFile, putStrLn, Handle, IOMode(ReadMode))
