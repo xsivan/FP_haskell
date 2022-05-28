@@ -3,3 +3,4 @@ dist-newstyle/
 haskell-ide-engine/
 data/parse-links
 data/parse-words
+src/inverted_index.txt
