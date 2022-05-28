@@ -21,7 +21,7 @@ module Utils(
         files <- SD.listDirectory direct
         return $ getListFilesAddNumbers' files
     getListFilesAddNumbers' :: [String] -> [(Int, String)]
-    getListFilesAddNumbers' = zip [1 ..]
+    getListFilesAddNumbers' = zip [0..]
 
     -- | Find index for first occurence of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOf :: String -> String -> Maybe Int
@@ -59,6 +59,7 @@ module Utils(
 
     readingList :: String -> [(Int, Float)]
     readingList = read
+
 
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubString :: String -> Int -> Int -> String
