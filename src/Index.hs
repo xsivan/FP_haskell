@@ -38,8 +38,10 @@ module Index where
             forM_ indexes $  \index -> do
                     let number = fst index
                     let index = number - 1
-                    let tmp = numberedFiles !! index
-                    print (word ++ " --> " ++ Utils.decodeFileName (snd tmp))
+                    if index == -1 then return()
+                    else do
+                        let tmp = numberedFiles !! index
+                        print (word ++ " --> " ++ Utils.decodeFileName (snd tmp))
     
 
     lowercase :: String -> String
