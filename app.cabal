@@ -26,7 +26,7 @@ executable app
     ghc-options: -W
     hs-source-dirs: src
     main-is: App.hs
-    other-modules: Index, Parser, Utils
+    other-modules: Index, PageRank, Parser, Utils
 
 executable index
     build-depends:
