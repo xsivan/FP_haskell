@@ -9,12 +9,11 @@ module Parser(parseJLFile) where
     import qualified Data.Maybe as DM(catMaybes)
     import qualified Data.String as DS(IsString)
     import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
-    import qualified System.IO as IO(hIsEOF, openFile, hPutStr, putStrLn, hSetEncoding, withFile, writeFile, utf8, Handle, IOMode(ReadMode, WriteMode))
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, openFile, putStrLn, Handle, IOMode(ReadMode))
     import qualified Text.HTML.TagSoup as TS(fromAttrib, innerText, isTagOpenName, parseTags, Tag(TagOpen))
-    import qualified Utils as Utils(encodeFileName, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile, writeToFileUTF8)
+    import qualified Utils as Utils(encodeFileName, getParseLinksPath, getParseWordsPath, indexOf, indexOfReverse, lPadNumber, recreateDir, subString, toLowerStringArr, uniqArr, validateFile, writeToFileUTF8)
     
     data JLLine = JLLine {html_content :: String, url :: String} deriving (GHCG.Generic, Show)
 
@@ -39,19 +38,19 @@ module Parser(parseJLFile) where
     isTagLinkWithHref' tag@(TS.TagOpen _ content) = "a" `TS.isTagOpenName` tag && not (null content) && ((=="href") . fst $ head content)
     isTagLinkWithHref' _ = False
 
-    -- | Loops via lines of 'srcFile'.jl file, from each line extract words and links of html and links and store it into 'destWordsDir' and 'destLinksDir' location
-    -- 
-    -- In case that 'srcFile' file is not valid, throw error. Recreates 'destWordsDir' or 'destLinksDir' directories.
-    parseJLFile :: FilePath -> FilePath -> FilePath -> IO ()
-    parseJLFile srcFile destLinksDir destWordsDir = do
+    -- | Loops via lines of 'srcFile'.jl file, from each line extract words and links of html and links
+    parseJLFile :: FilePath -> IO ()
+    parseJLFile srcFile = do
         Utils.validateFile srcFile "jl" "Source file doesnt exist!"
-        Utils.recreateDir destLinksDir
-        Utils.recreateDir destWordsDir
+        Utils.recreateDir linksPath
+        Utils.recreateDir wordsPath
 
         fileHandle <- IO.openFile srcFile IO.ReadMode
         startTime <- DT.getCurrentTime
+        parseJLLine' fileHandle linksPath wordsPath 0 startTime
 
-        parseJLLine' fileHandle destLinksDir destWordsDir 0 startTime
+        where linksPath = Utils.getParseLinksPath
+              wordsPath = Utils.getParseWordsPath
 
     -- | Loops via lines of 'fileHandle' and per line calls parseJLineContent where pass parsed JSON object of that line
     parseJLLine' :: IO.Handle -> FilePath -> FilePath -> Int -> DT.UTCTime -> IO()

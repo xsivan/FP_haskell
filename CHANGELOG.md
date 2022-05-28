@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file.
 ## [1.0.0] - 2022-05-28
 ### Added
 - Add functionality to get Pagerank
-- Implemented core functionality into App
+- Mergfing of core functionality into App
 - Utils functions :
+  - getParsePath
   - getParseLinksPath
   - getParseWordsPath
   - writeToFileUTF8
@@ -15,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Merged with pagerank.hs
 - Update indexing docId
 - Fixing minor warnings
+- Fixed issue with fileWrite of special characters on windows
 
 ## [0.6.0] - 2022-05-27
 ### Added

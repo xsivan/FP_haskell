@@ -6,7 +6,7 @@ module PageRank(computePageRank) where
     import           Data.List(isSuffixOf)
     import           Data.Maybe  (fromJust)
     import           Prelude     hiding (lookup)
-    import qualified Utils as Utils(decodeFileName, encodeFileName)
+    import qualified Utils as Utils(decodeFileName, encodeFileName, getParseLinksPath, getParsePagerankPath)
 
     type Node = Int
     type PRValue = Double
@@ -148,14 +148,14 @@ module PageRank(computePageRank) where
         | "/" `isSuffixOf` filePath = filePath
         | otherwise                 = filePath ++ "/"
 
-    computePageRank :: String -> IO ()
-    computePageRank filePath = do
-        let correctedFilePath = returnCorrectPath filePath
+    computePageRank :: IO ()
+    computePageRank = do
+        let correctedFilePath = returnCorrectPath Utils.getParseLinksPath
         putStrLn "Starting Page Ranking"
         let listOfFilesIO = getListOfFiles correctedFilePath
         listOfFiles <- listOfFilesIO
         let outputPageRankDataIO = getPageRankData ((length listOfFiles) - 1) listOfFiles correctedFilePath
         outputPageRankData <- outputPageRankDataIO
         let filteredPageRankData = dropInvalidValues outputPageRankData
-        writeFile "/opt/app/src/pageRankData.txt" $ show $ toList $ process filteredPageRankData 10 0.85
+        writeFile Utils.getParsePagerankPath $ show $ toList $ process filteredPageRankData 10 0.85
         putStrLn "Page ranking Ended"

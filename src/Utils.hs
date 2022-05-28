@@ -28,9 +28,11 @@ module Utils(
     getParsePath :: FilePath
     getParsePath = "./parse/"
 
+    -- | Returns inverted index parse path.
     getParseInvertedIndexPath :: FilePath
     getParseInvertedIndexPath = getParsePath ++ "inverted_index.txt"
 
+    -- | Returns page rank parse path.
     getParsePagerankPath :: FilePath
     getParsePagerankPath = getParsePath ++ "pageRankData.txt"
 
