@@ -70,11 +70,11 @@ module Index where
             else do
                     writeFunction 1 (unwords word) 0
                     listOfFiles <- Utils.getListFiles "data/parse-words"
-                    let pagerank = zip [1..100] [0.01,0.02..1] -- There will be pagerank function
+                    pagerank_contents <- readFile "src/output.txt"
                     forM_ listOfFiles $  \file -> do
                                     handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
-                                    let page_rank = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) pagerank
+                                    let page_rank = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) (Utils.readingList pagerank_contents)
                                     let t = map (\w -> findWord w (unwords (lines contents))) word
                                     let n = map (\bools -> if bools then 1 else 0) t
                                     if length word == sum n then writeFunction 2 (show (fst file)) (sum page_rank) else return ()

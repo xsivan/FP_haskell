@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2022-05-28
+### Added
+- Add functionality to get Pagerank
+### Changed
+- Move Index.hs functionality to App.hs
+- Update Index.hs
+- Merged with pagerank.hs
+- Update indexing docId 
+
+
 ## [0.6.0] - 2022-05-27
 ### Added
  - Base concept of initApp and searchText functions into App module
