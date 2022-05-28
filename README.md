@@ -7,6 +7,12 @@
 # Cabal cheatsheet
 - Load project module/executable in ghci `cabal v2-repl <module>`
 
+# Starting inicialization
+- cabal v2-repl app
+- initapp "pathToJLFile"
+- searchText
+- "text"
+
 # Links:
 - [Real World Haskell](http://book.realworldhaskell.org/read/)
 - [Transparency in Keyword Faceted Search](https://datasetsearch.research.google.com/search?query=html%20pages&docid=L2cvMTFwendteW13cA%3D%3D)
