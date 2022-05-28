@@ -1,6 +1,6 @@
 module Utils(
     decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
-    main, readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
+    readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
@@ -42,10 +42,6 @@ module Utils(
     -- | LPad input string by requiredLen - len of string with padChar characters
     lPadNumber :: String -> Int -> Char -> String
     lPadNumber value requiredLen padChar = (\x -> DL.replicate (requiredLen - length x) padChar ++ x) value
-
-    -- | Defined only as cabal requirement, does nothing.
-    main :: IO ()
-    main = do return ()
 
     -- | ReCreates directory, that means if dir in 'path' exist remove it include its content and then create new one else only creates it.
     -- recreateDir :: FilePath -> IO ()
