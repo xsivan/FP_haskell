@@ -63,3 +63,13 @@ executable utils
     ghc-options: -O2 -main-is Utils
     hs-source-dirs: src
     main-is: Utils.hs
+
+executable pageRank
+    build-depends:
+        base ^>=4.16.1.0,
+        containers,
+        directory
+    default-language: Haskell2010
+    ghc-options: -main-is PageRank
+    hs-source-dirs: src
+    main-is: PageRank.hs
