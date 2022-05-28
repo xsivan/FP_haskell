@@ -34,7 +34,7 @@ module Index where
 
     getURL :: Foldable t => [Char] -> t (Int, b) -> IO ()
     getURL word indexes = do
-            numberedFiles <- Utils.getListFiles "data/parse-words"
+            numberedFiles <- Utils.getListFiles "data/parse/words"
             forM_ indexes $  \index -> do
                     let number = fst index
                     let index = number - 1
@@ -48,7 +48,7 @@ module Index where
 
     readWord :: IO [String]
     readWord = do
-            putStrLn "hladaj pre slovo"
+            putStrLn "googli"
             word <- getLine
             let new_word = lowercase word
             return (words new_word)
@@ -69,10 +69,10 @@ module Index where
             if finded then hClose f
             else do
                     writeFunction 1 (unwords word) 0
-                    listOfFiles <- Utils.getListFiles "data/parse-words"
+                    listOfFiles <- Utils.getListFiles "data/parse/words"
                     pagerank_contents <- readFile "src/pageRankData.txt"
                     forM_ listOfFiles $  \file -> do
-                                    handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
+                                    handle <- openFile ("data/parse/words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
                                     let page_rank = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) (Utils.readingList pagerank_contents)
                                     let t = map (\w -> findWord w (unwords (lines contents))) word

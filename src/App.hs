@@ -5,12 +5,15 @@ module App (initApp, searchText) where
     
     -- | Parse file and initialize app for search. Format: initApp sourceJlFilePath parseDestDir. In case that parseDestDir exist it is cleaned.
     --
-    -- Example: initApp "\/opt\/app\/data\/collection_100.jl" "\/opt\/app/data-parse"
+    -- Example: initApp "//opt//app//data//collection_100.jl" "//opt//app//data//parse"
     initApp :: FilePath -> FilePath -> IO()
     initApp srcFile parseDestDir = do 
-        Parser.parseJLFile srcFile linksDest (parseDestDir ++ "/-words")
+        Parser.parseJLFile srcFile linksDest (parseDestDir ++ "/words")
         PageRank.computePageRank linksDest
-        where linksDest = (parseDestDir ++ "/-links")
+        where linksDest = (parseDestDir ++ "/links")
+
+
+    -- | initApp "./data/collection_100.jl" "./data/parse"
 
     -- | Search text occurences on the parsed pages
     searchText :: IO ()

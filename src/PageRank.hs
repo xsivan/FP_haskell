@@ -5,9 +5,7 @@ module PageRank(computePageRank) where
                               mapWithKey, member, size, toList)
     import           Data.List(isSuffixOf)
     import           Data.Maybe  (fromJust)
-    import           Debug.Trace (trace)
     import           Prelude     hiding (lookup)
-    import           Text.Printf (printf)
     import qualified Utils as Utils(decodeFileName, encodeFileName)
 
     type Node = Int
@@ -41,8 +39,7 @@ module PageRank(computePageRank) where
                     if member n oEdges then
                         loop (n-1) iEdges oEdges
                     else
-                        let numNodes = maxNode + 1
-                            newOEdges = insert n (filter (/= n) [0..maxNode]) oEdges
+                        let newOEdges = insert n (filter (/= n) [0..maxNode]) oEdges
                             newIEdges = mapWithKey (\k v -> if k /= n then v ++ [n] else v) iEdges
                             in loop (n-1) newIEdges newOEdges
             addAllNodes :: Int -> InboundEdges -> InboundEdges
@@ -51,15 +48,15 @@ module PageRank(computePageRank) where
                 | otherwise =
                     addAllNodes (n-1) $ insertWith (\new old -> new ++ old) n [] iEdges
 
-    pG :: [(Int, Int)] -> (InboundEdges, OutboundEdges, PageRank)
-    pG arr =
+    getPareRankElemsArr :: [(Int, Int)] -> (InboundEdges, OutboundEdges, PageRank)
+    getPareRankElemsArr arr =
         let ls = arr
-            (iEdges, oEdges) = postProcess $ foldl pL (empty, empty, 0) ls
+            (iEdges, oEdges) = postProcess $ foldl createtPageRankElem (empty, empty, 0) ls
             numNodes = size iEdges
             in (iEdges, oEdges, newPageRank numNodes)
 
-    pL :: (InboundEdges, OutboundEdges, Node) -> (Int, Int) -> (InboundEdges, OutboundEdges, Node)
-    pL (iEdges, oEdges, maxNode) docIdcomb =
+    createtPageRankElem :: (InboundEdges, OutboundEdges, Node) -> (Int, Int) -> (InboundEdges, OutboundEdges, Node)
+    createtPageRankElem (iEdges, oEdges, maxNode) docIdcomb =
         let (from, to) = (fst docIdcomb, snd docIdcomb)
             in (insertWith plusNode to [from] iEdges,
                 insertWith plusNode from [to] oEdges,
@@ -92,7 +89,7 @@ module PageRank(computePageRank) where
 
     process :: [(Int, Int)] -> Int -> Double -> PageRank
     process input numIters dampingFactor =
-        let (iEdges, oEdges, pageRank) = pG input
+        let (iEdges, oEdges, pageRank) = getPareRankElemsArr input
             in loopProcess numIters dampingFactor iEdges oEdges pageRank
 
     decodeFileNames :: [String] -> [String]
@@ -130,14 +127,14 @@ module PageRank(computePageRank) where
     getElemOfArray index inputList =
         inputList !! index
 
-    pgr :: Int -> [(Int, String)] -> String -> IO [(Int, Int)]
-    pgr (-1) _ _ = return []
-    pgr index listOfFiles filePath = do
+    getPageRankData :: Int -> [(Int, String)] -> String -> IO [(Int, Int)]
+    getPageRankData (-1) _ _ = return []
+    getPageRankData index listOfFiles filePath = do
         let oneElement = getElemOfArray index listOfFiles
         pageNames <- getFileWords (snd oneElement) filePath
         let fromDocId = getDocId listOfFiles (snd oneElement)
         let oneWebPgR = getFromToDocId pageNames listOfFiles fromDocId
-        rest <- pgr (index - 1) listOfFiles filePath
+        rest <- getPageRankData (index - 1) listOfFiles filePath
         return (oneWebPgR ++ rest)
 
     dropInvalidValues :: [(Int, Int)] -> [(Int, Int)]
@@ -157,12 +154,8 @@ module PageRank(computePageRank) where
         putStrLn "Starting Page Ranking"
         let listOfFilesIO = getListOfFiles correctedFilePath
         listOfFiles <- listOfFilesIO
-        let outputPageRankDataIO = pgr ((length listOfFiles) - 1) listOfFiles correctedFilePath
+        let outputPageRankDataIO = getPageRankData ((length listOfFiles) - 1) listOfFiles correctedFilePath
         outputPageRankData <- outputPageRankDataIO
         let filteredPageRankData = dropInvalidValues outputPageRankData
         writeFile "/opt/app/src/pageRankData.txt" $ show $ toList $ process filteredPageRankData 10 0.85
         putStrLn "Page ranking Ended"
-
-    main :: IO ()
-    main = do
-        putStrLn ""

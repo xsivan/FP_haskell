@@ -6,7 +6,7 @@ module Utils(
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.Char as DC(toLower)
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
-    import qualified System.Directory as SD(createDirectory, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
+    import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
@@ -50,7 +50,7 @@ module Utils(
         exist <- SD.doesDirectoryExist path
         if exist then (>>) removeDir createDir else createDir
 
-        where createDir = SD.createDirectory path  
+        where createDir = SD.createDirectoryIfMissing True path  
               removeDir = SD.removeDirectoryRecursive path
 
     readingList :: String -> [(Int, Float)]
