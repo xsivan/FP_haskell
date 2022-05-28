@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Fixing minor warnings
 - Fixed issue with fileWrite of special characters on windows
 - Fixed unclosed file handles
+- Fixing one error in index.hs
 
 ## [0.6.0] - 2022-05-27
 ### Added
