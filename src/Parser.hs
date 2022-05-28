@@ -9,6 +9,7 @@ module Parser(parseJLFile) where
     import qualified Data.Maybe as DM(catMaybes)
     import qualified Data.String as DS(IsString)
     import qualified Data.Time as DT(diffUTCTime, getCurrentTime, UTCTime)
+    import qualified System.IO as IO(hIsEOF, openFile, hPutStr, putStrLn, hSetEncoding, withFile, writeFile, utf8, Handle, IOMode(ReadMode, WriteMode))
     import qualified GHC.Generics as GHCG(Generic)
     import qualified Network.URI as NW(parseURI, URI(uriPath, uriAuthority), URIAuth(uriRegName))
     import qualified System.IO as IO(hIsEOF, openFile, putStrLn, writeFile, Handle, IOMode(ReadMode))
@@ -90,8 +91,12 @@ module Parser(parseJLFile) where
     parseJLineHtmlContent' :: String -> String -> String-> IO()
     parseJLineHtmlContent' html destLinksFile destWordsFile = do
         IO.writeFile destLinksFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr links)))
-        IO.writeFile destWordsFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
-        
+        -- print((concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words))))
+        -- IO.writeFile destWordsFile (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
+        fileHandle <- IO.openFile destWordsFile IO.WriteMode
+        IO.hSetEncoding fileHandle IO.utf8
+        IO.hPutStr fileHandle (concat (DL.intersperse " " (Utils.uniqArr $  Utils.toLowerStringArr words)))
+
         where clanedBodyContent = removePairTags' (pickPairTagContent' html "<body" "</body>") tagsToRemove
               links = DM.catMaybes (map (\x -> (cleanUrl' x)) ((map (TS.fromAttrib ("href" :: String)).filter isTagLinkWithHref'.TS.parseTags) clanedBodyContent))
               tagsToRemove = ["script", "style","noscript"]
