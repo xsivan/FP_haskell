@@ -56,6 +56,7 @@ module Index where
 
     sortFloat :: Ord a1 => [(a2, a1)] -> [(a2, a1)]
     sortFloat xs = reverse (sortBy (\(_, a) (_, b) -> compare a b) xs)
+ 
 
     main :: IO()
     main =  do 
