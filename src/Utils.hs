@@ -1,12 +1,13 @@
 module Utils(
     decodeFileName, encodeFileName, getListFiles, indexOf, indexOfReverse, lPadNumber, 
-    readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile
+    readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
     import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
     import qualified Data.Char as DC(toLower)
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
+    import qualified System.IO as IO(hPutStr, hSetEncoding, openFile, utf8, IOMode(WriteMode))
     
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
@@ -87,4 +88,10 @@ module Utils(
         exist <- SD.doesFileExist path
         if and [exist, matchSuffix] then return () else error errorMessage
         where matchSuffix = DL.isSuffixOf fileExtension path
-        
+
+    -- | Writes content in file with UTF-8 encoding    
+    writeToFileUTF8 :: FilePath -> String -> IO()
+    writeToFileUTF8 filePath content = do
+        fileHandle <- IO.openFile filePath IO.WriteMode
+        IO.hSetEncoding fileHandle IO.utf8
+        IO.hPutStr fileHandle content
