@@ -3,6 +3,7 @@ module PageRank(main) where
     import System.Directory
     import           Data.Map    (Map, empty, insert, insertWith, lookup,
                               mapWithKey, member, size, toList)
+    import           Data.List(isSuffixOf)
     import           Data.Maybe  (fromJust)
     import           Debug.Trace (trace)
     import           Prelude     hiding (lookup)
@@ -94,20 +95,15 @@ module PageRank(main) where
         let (iEdges, oEdges, pageRank) = pG input
             in loopProcess numIters dampingFactor iEdges oEdges pageRank
 
----------------------------------------------------------------------------------------------
-    
-    mainDirectory :: String
-    mainDirectory = "data/parse-links"
-
-    testos :: [String] -> [String]
-    testos [] = []
-    testos (x:xs) =
-        (Utils.decodeFileName x) : testos xs
+    decodeFileNames :: [String] -> [String]
+    decodeFileNames [] = []
+    decodeFileNames (x:xs) =
+        (Utils.decodeFileName x) : decodeFileNames xs
 
     getListOfFiles :: FilePath -> IO [(Int, String)]
     getListOfFiles path = do 
         files <- listDirectory path
-        let decoded = testos files
+        let decoded = decodeFileNames files
         let numberedPages = addDocId decoded
         return numberedPages
         
@@ -120,9 +116,9 @@ module PageRank(main) where
         | snd x == pageName = fst x
         | otherwise         = getDocId xs pageName
 
-    getFileWords :: String -> IO [String]
-    getFileWords fileName = do  
-        content <- readFile $ mainDirectory ++ "/" ++ (Utils.encodeFileName  fileName)
+    getFileWords :: String -> String -> IO [String]
+    getFileWords fileName filePath = do  
+        content <- readFile $ filePath ++ "/" ++ (Utils.encodeFileName  fileName)
         return $ words content
 
     getFromToDocId :: [String] -> [(Int, String)] -> Int -> [(Int, Int)]
@@ -134,14 +130,14 @@ module PageRank(main) where
     getElemOfArray index inputList =
         inputList !! index
 
-    pgr :: Int -> [(Int, String)] -> IO [(Int, Int)]
-    pgr (-1) _ = return []
-    pgr index listOfFiles = do
+    pgr :: Int -> [(Int, String)] -> String -> IO [(Int, Int)]
+    pgr (-1) _ _ = return []
+    pgr index listOfFiles filePath = do
         let oneElement = getElemOfArray index listOfFiles
-        pageNames <- getFileWords $ snd oneElement
+        pageNames <- getFileWords (snd oneElement) filePath
         let fromDocId = getDocId listOfFiles (snd oneElement)
         let oneWebPgR = getFromToDocId pageNames listOfFiles fromDocId
-        rest <- pgr (index - 1) listOfFiles
+        rest <- pgr (index - 1) listOfFiles filePath
         return (oneWebPgR ++ rest)
 
     dropInvalidValues :: [(Int, Int)] -> [(Int, Int)]
@@ -150,13 +146,23 @@ module PageRank(main) where
         | fst x /= -1  && snd x /= -1 = x : dropInvalidValues xs
         | otherwise                   = dropInvalidValues xs
 
+    returnCorrectPath :: String -> String
+    returnCorrectPath filePath
+        | "/" `isSuffixOf` filePath = filePath
+        | otherwise                 = filePath ++ "/"
+
+    computePageRank :: String -> IO ()
+    computePageRank filePath = do
+        let correctedFilePath = returnCorrectPath filePath
+        putStrLn "Starting Page Ranking"
+        let listOfFilesIO = getListOfFiles correctedFilePath
+        listOfFiles <- listOfFilesIO
+        let outputPageRankDataIO = pgr ((length listOfFiles) - 1) listOfFiles correctedFilePath
+        outputPageRankData <- outputPageRankDataIO
+        let filteredPageRankData = dropInvalidValues outputPageRankData
+        writeFile "/opt/app/src/pageRankData.txt" $ show $ toList $ process filteredPageRankData 10 0.85
+        putStrLn "Page ranking Ended"
+
     main :: IO ()
     main = do
-        putStrLn "Starting Page Ranking"
-        let listOfFilesIO = getListOfFiles mainDirectory
-        listOfFiles <- listOfFilesIO
-        let outputPageRankData = pgr ((length listOfFiles) - 1) listOfFiles
-        a <- outputPageRankData
-        let b = dropInvalidValues a
-        writeFile "/opt/app/src/pageRankData.txt" $ show $ toList $ process b 5 0.85
-        putStrLn "Page ranking Ended"
+        putStrLn ""
