@@ -3,3 +3,5 @@ dist-newstyle/
 haskell-ide-engine/
 data/parse-links
 data/parse-words
+
+src/pageRankData.txt
