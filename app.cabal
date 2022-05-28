@@ -8,16 +8,25 @@ license: MIT
 license-file: LICENSE
 synopsis: FP project
 name: app
-version: 0.5.3
+version: 0.6.0
 
 executable app
     build-depends:
+        aeson,
         base ^>=4.16.1.0,
-        containers
+        base64-bytestring,
+        bytestring,
+        containers,
+        directory,
+        network-uri,
+        split,
+        tagsoup,
+        time
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
     main-is: App.hs
+    other-modules: Index, Parser, Utils
 
 executable index
     build-depends:
@@ -58,8 +67,7 @@ executable utils
         base64-bytestring,
         bytestring,
         containers,
-        directory,
-        time
+        directory
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
