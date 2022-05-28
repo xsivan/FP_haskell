@@ -70,7 +70,7 @@ module Index where
             else do
                     writeFunction 1 (unwords word) 0
                     listOfFiles <- Utils.getListFiles "data/parse-words"
-                    pagerank_contents <- readFile "src/output.txt"
+                    pagerank_contents <- readFile "src/pageRankData.txt"
                     forM_ listOfFiles $  \file -> do
                                     handle <- openFile ("data/parse-words/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
