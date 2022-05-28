@@ -5,3 +5,4 @@ data/parse-links
 data/parse-words
 
 src/pageRankData.txt
+src/inverted_index.txt
