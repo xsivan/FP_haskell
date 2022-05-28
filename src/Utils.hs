@@ -1,5 +1,5 @@
 module Utils(
-    decodeFileName, encodeFileName, getListFiles, getParseLinksPath, getParseWordsPath, indexOf, indexOfReverse, lPadNumber, 
+    decodeFileName, encodeFileName, getListFiles, getParsePath, getParseLinksPath, getParseWordsPath, indexOf, indexOfReverse, lPadNumber, 
     readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
@@ -24,13 +24,17 @@ module Utils(
     getListFilesAddNumbers' :: [String] -> [(Int, String)]
     getListFilesAddNumbers' = zip [0..]
 
+    -- | Returns parse path.
+    getParsePath :: FilePath
+    getParsePath = "./parse/"
+
     -- | Returns links parse path.
-    getParseLinksPath :: FilePath -> FilePath
-    getParseLinksPath parsePath = parsePath ++ "/links"
+    getParseLinksPath :: FilePath
+    getParseLinksPath = getParsePath ++ "links"
 
     -- | Returns words parse path.
-    getParseWordsPath :: FilePath -> FilePath
-    getParseWordsPath parsePath = parsePath ++ "/words"
+    getParseWordsPath :: FilePath
+    getParseWordsPath = getParsePath ++ "words"
 
     -- | Find index for first occurence of 'needle' in 'haystick', returns 'Nothing' if there is no 'needle' in 'haystick'.
     indexOf :: String -> String -> Maybe Int
