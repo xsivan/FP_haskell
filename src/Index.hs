@@ -26,15 +26,15 @@ module Index where
 
     writeFunction :: (Eq a1, Num a1, Show a2) => a1 -> [Char] -> a2 -> IO ()
     writeFunction id str pgr 
-        | id == 1 = appendFile "src/inverted_index.txt" $ str ++ " ["
-        | id == 2 = appendFile "src/inverted_index.txt" $ ("(" ++ str  ++ "," ++ show pgr ++ "),")
-        | id == 3 = appendFile "src/inverted_index.txt" $ "(0,0)]" ++ str
+        | id == 1 = appendFile Utils.getParseInvertedIndexPath $ str ++ " ["
+        | id == 2 = appendFile Utils.getParseInvertedIndexPath $ ("(" ++ str  ++ "," ++ show pgr ++ "),")
+        | id == 3 = appendFile Utils.getParseInvertedIndexPath $ "(0,0)]" ++ str
         | otherwise = print("Done")
 
 
     getURL :: Foldable t => [Char] -> t (Int, b) -> IO ()
     getURL word indexes = do
-            numberedFiles <- Utils.getListFiles "data/parse/words"
+            numberedFiles <- Utils.getListFiles Utils.getParseWordsPath
             forM_ indexes $  \index -> do
                     let number = fst index
                     let index = number - 1
@@ -62,17 +62,17 @@ module Index where
     iindex :: IO ()
     iindex = do
             word <- readWord
-            f <- openFile ("src/inverted_index.txt") ReadMode
+            f <- openFile (Utils.getParseInvertedIndexPath) ReadMode
             cnt <- hGetContents f
             let invertedContent = (unwords (lines cnt))
             let finded = findWord ((unwords word) ++ " [") invertedContent
             if finded then hClose f
             else do
                     writeFunction 1 (unwords word) 0
-                    listOfFiles <- Utils.getListFiles "data/parse/words"
-                    pagerank_contents <- readFile "src/pageRankData.txt"
+                    listOfFiles <- Utils.getListFiles Utils.getParseWordsPath
+                    pagerank_contents <- readFile Utils.getParsePagerankPath
                     forM_ listOfFiles $  \file -> do
-                                    handle <- openFile ("data/parse/words/" ++ snd file) ReadMode
+                                    handle <- openFile (Utils.getParseWordsPath ++ "/" ++ snd file) ReadMode
                                     contents <- hGetContents handle
                                     let page_rank = map (\pgr -> if (fst pgr == fst file) then (snd pgr) else 0) (Utils.readingList pagerank_contents)
                                     let t = map (\w -> findWord w (unwords (lines contents))) word
@@ -81,7 +81,7 @@ module Index where
 
                     writeFunction 3 "\n" 0
 
-            contents <- readFile "src/inverted_index.txt"
+            contents <- readFile Utils.getParseInvertedIndexPath
             let listInverted = lines contents
             forM_ listInverted $ \line -> do
                     let fileWords = words line

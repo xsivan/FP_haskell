@@ -1,5 +1,5 @@
 module Utils(
-    decodeFileName, encodeFileName, getListFiles, getParsePath, getParseLinksPath, getParseWordsPath, indexOf, indexOfReverse, lPadNumber, 
+    decodeFileName, encodeFileName, getListFiles, getParsePath, getParseLinksPath, getParseWordsPath, getParseInvertedIndexPath, getParsePagerankPath, indexOf, indexOfReverse, lPadNumber, 
     readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
 ) where
     import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
@@ -27,6 +27,12 @@ module Utils(
     -- | Returns parse path.
     getParsePath :: FilePath
     getParsePath = "./parse/"
+
+    getParseInvertedIndexPath :: FilePath
+    getParseInvertedIndexPath = getParsePath ++ "inverted_index.txt"
+
+    getParsePagerankPath :: FilePath
+    getParsePagerankPath = getParsePath ++ "pageRankData.txt"
 
     -- | Returns links parse path.
     getParseLinksPath :: FilePath
