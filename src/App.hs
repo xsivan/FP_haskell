@@ -1,6 +1,7 @@
 module App(main, initApp, searchText) where
     import qualified Parser(parseJLFile)
-
+    import Index (iindex)
+    
     -- | Parse file and initialize app for search. Format: initApp sourceJlFilePath parseLinksDestDir parseWordsDestDir
     --
     -- Example: initApp "\/opt\/app\/data\/collection_100.jl" "\/opt\/app/data\/parse-links" "\/opt\/app\/data\/parse-words"
@@ -10,7 +11,7 @@ module App(main, initApp, searchText) where
 
     -- | Defined only as cabal requirement, does nothing.
     main :: IO ()
-    main = do return ()
+    main = iindex
 
     -- | Search text occurences on the parsed pages
     searchText :: FilePath -> FilePath -> FilePath -> IO ()

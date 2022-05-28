@@ -58,8 +58,9 @@ module Index where
     sortFloat xs = reverse (sortBy (\(_, a) (_, b) -> compare a b) xs)
  
 
-    main :: IO()
-    main =  do 
+    
+    iindex :: IO ()
+    iindex = do
             word <- readWord
             f <- openFile ("src/inverted_index.txt") ReadMode
             cnt <- hGetContents f
