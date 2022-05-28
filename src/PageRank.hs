@@ -2,11 +2,12 @@ module PageRank(main) where
     import System.IO
     import System.Directory
     import           Data.Map    (Map, empty, insert, insertWith, lookup,
-                              mapWithKey, member, size)
+                              mapWithKey, member, size, toList)
     import           Data.Maybe  (fromJust)
     import           Debug.Trace (trace)
     import           Prelude     hiding (lookup)
     import           Text.Printf (printf)
+    import qualified Utils as Utils(decodeFileName, encodeFileName)
 
     type Node = Int
     type PRValue = Double
@@ -88,7 +89,6 @@ module PageRank(main) where
                                 prValue = fromJust $ lookup node pageRank
                                 in acc + prValue / (fromIntegral $ length outbounds)
 
-
     process :: [(Int, Int)] -> Int -> Double -> PageRank
     process input numIters dampingFactor =
         let (iEdges, oEdges, pageRank) = pG input
@@ -97,12 +97,18 @@ module PageRank(main) where
 ---------------------------------------------------------------------------------------------
     
     mainDirectory :: String
-    mainDirectory = "data/data_parse_links"
+    mainDirectory = "data/parse-links"
+
+    testos :: [String] -> [String]
+    testos [] = []
+    testos (x:xs) =
+        (Utils.decodeFileName x) : testos xs
 
     getListOfFiles :: FilePath -> IO [(Int, String)]
     getListOfFiles path = do 
         files <- listDirectory path
-        let numberedPages = addDocId files
+        let decoded = testos files
+        let numberedPages = addDocId decoded
         return numberedPages
         
     addDocId :: [String] -> [(Int, String)]
@@ -116,13 +122,13 @@ module PageRank(main) where
 
     getFileWords :: String -> IO [String]
     getFileWords fileName = do  
-        content <- readFile $ mainDirectory ++ "/" ++ fileName
+        content <- readFile $ mainDirectory ++ "/" ++ (Utils.encodeFileName  fileName)
         return $ words content
 
     getFromToDocId :: [String] -> [(Int, String)] -> Int -> [(Int, Int)]
     getFromToDocId [] _ _ = []
     getFromToDocId (x:xs) polePages fromDocId =
-        (fromDocId, getDocId polePages (x ++ ".txt")) : getFromToDocId xs polePages fromDocId
+        (fromDocId, getDocId polePages (x)) : getFromToDocId xs polePages fromDocId
 
     getElemOfArray :: Int -> [(Int, String)] -> (Int, String)
     getElemOfArray index inputList =
@@ -146,10 +152,11 @@ module PageRank(main) where
 
     main :: IO ()
     main = do
+        putStrLn "Starting Page Ranking"
         let listOfFilesIO = getListOfFiles mainDirectory
         listOfFiles <- listOfFilesIO
         let outputPageRankData = pgr ((length listOfFiles) - 1) listOfFiles
         a <- outputPageRankData
         let b = dropInvalidValues a
-        writeFile "output.txt" $ show $ process b 5 0.85
-        putStrLn $ show b
+        writeFile "/opt/app/src/pageRankData.txt" $ show $ toList $ process b 5 0.85
+        putStrLn "Page ranking Ended"

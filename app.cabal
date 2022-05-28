@@ -76,6 +76,8 @@ executable utils
 executable pageRank
     build-depends:
         base ^>=4.16.1.0,
+        base64-bytestring,
+        bytestring,
         containers,
         directory
     default-language: Haskell2010
