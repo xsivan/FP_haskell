@@ -1,8 +1,7 @@
 .idea/
 dist-newstyle/
 haskell-ide-engine/
-data/parse-links
-data/parse-words
+data/parse/
 
 src/pageRankData.txt
 src/inverted_index.txt
