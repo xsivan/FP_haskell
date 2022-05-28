@@ -1,4 +1,4 @@
-module App(main, initApp, searchText) where
+module App (searchText, initApp) where
     import qualified Parser(parseJLFile)
     import Index (iindex)
     
@@ -9,10 +9,7 @@ module App(main, initApp, searchText) where
     initApp srcFile destLinksDir destWordsDir = Parser.parseJLFile srcFile destLinksDir destWordsDir
     -- TODO init other stuff as index
 
-    -- | Defined only as cabal requirement, does nothing.
-    main :: IO ()
-    main = iindex
-
     -- | Search text occurences on the parsed pages
-    searchText :: FilePath -> FilePath -> FilePath -> IO ()
-    searchText text parseLinksDir parseWordsDir = putStrLn ("Not implemented - " ++ text ++ " - "  ++ parseLinksDir  ++ " - " ++ parseWordsDir)
+    searchText :: IO ()
+    searchText = iindex
+
