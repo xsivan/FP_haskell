@@ -1,4 +1,4 @@
-module PageRank(main) where
+module PageRank(computePageRank) where
     import System.IO
     import System.Directory
     import           Data.Map    (Map, empty, insert, insertWith, lookup,
