@@ -2,20 +2,21 @@ module Utils(
     decodeFileName, encodeFileName, getListFiles, getParsePath, getParseLinksPath, getParseWordsPath, getParseInvertedIndexPath, getParsePagerankPath, indexOf, indexOfReverse, lPadNumber, 
     readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
 ) where
-    import qualified Data.ByteString.Base64 as Base64(decodeLenient, encode)
-    import qualified Data.ByteString.Char8 as DBSC(pack, unpack)
+    import qualified Codec.Compression.Zlib as Zlib(compress, decompress)
+    import qualified Data.ByteString.Base64.Lazy as Base64L(decodeLenient, encode)
+    import qualified Data.ByteString.Lazy.Char8 as DBSCL(pack, unpack)
     import qualified Data.Char as DC(toLower)
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     import qualified System.IO as IO(hClose, hPutStr, hSetEncoding, openFile, utf8, IOMode(WriteMode))
-    
+
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
-    decodeFileName encodedFileName = DBSC.unpack (Base64.decodeLenient (DBSC.pack encodedFileName))
+    decodeFileName encodedFileName = replaceCharInString '-' '/' $ DBSCL.unpack (Zlib.decompress (Base64L.decodeLenient (DBSCL.pack encodedFileName)))
 
     -- | Hash filename.
     encodeFileName :: String -> String
-    encodeFileName fileName = DBSC.unpack (Base64.encode (DBSC.pack fileName))
+    encodeFileName text = replaceCharInString '/' '-' $  DBSCL.unpack (Base64L.encode (Zlib.compress (DBSCL.pack text)))
 
     getListFiles :: FilePath -> IO [(Int, String)]
     getListFiles direct = do
@@ -77,10 +78,13 @@ module Utils(
     readingList :: String -> [(Int, Float)]
     readingList = read
 
-
     -- | Removes content from 'startIndex' to 'endIndex' in 'text'.
     removeSubString :: String -> Int -> Int -> String
     removeSubString text startIndex endIndex = concat [subString text 0 startIndex, subString text endIndex (length text)]
+
+    -- | Replaces special character in string for another one.
+    replaceCharInString :: Eq b => b -> b -> [b] -> [b]
+    replaceCharInString what for text = map (\c -> if c == what then for; else c) text
 
     -- | Transformes string array to lowercase
     toLowerStringArr :: [String] -> [String]

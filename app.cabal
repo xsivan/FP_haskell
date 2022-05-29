@@ -8,7 +8,7 @@ license: MIT
 license-file: LICENSE
 synopsis: FP project
 name: app
-version: 1.0.0
+version: 1.0.1
 
 executable app
     build-depends:
@@ -21,7 +21,8 @@ executable app
         network-uri,
         split,
         tagsoup,
-        time
+        time,
+        zlib
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
@@ -36,7 +37,8 @@ executable index
         containers,
         directory,
         split,
-        time
+        time,
+        zlib
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
@@ -49,7 +51,8 @@ executable pageRank
         base64-bytestring,
         bytestring,
         containers,
-        directory
+        directory,
+        zlib
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
@@ -66,7 +69,8 @@ executable parser
         directory,
         network-uri,
         tagsoup,
-        time
+        time,
+        zlib
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src
@@ -80,7 +84,8 @@ executable utils
         base64-bytestring,
         bytestring,
         containers,
-        directory
+        directory,
+        zlib
     default-language: Haskell2010
     ghc-options: -W
     hs-source-dirs: src

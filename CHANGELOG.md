@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2022-05-29
+### Changed
+ - Fixed issue with parser exception where file names was too long, solved with compression.
+
 ## [1.0.0] - 2022-05-28
 ### Added
 - Add functionality to get Pagerank
