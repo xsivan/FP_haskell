@@ -42,6 +42,7 @@ module Parser(parseJLFile) where
     parseJLFile :: FilePath -> IO ()
     parseJLFile srcFile = do
         Utils.validateFile srcFile "jl" "Source file doesnt exist!"
+        putSection' "Preparing FS structure and starting parser"
         Utils.recreateDir linksPath
         Utils.recreateDir wordsPath
 

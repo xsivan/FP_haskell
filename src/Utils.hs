@@ -12,11 +12,11 @@ module Utils(
 
     -- | Decodes hashed file name.
     decodeFileName :: String -> String
-    decodeFileName encodedFileName = replaceCharInString '-' '/' $ DBSCL.unpack (Zlib.decompress (Base64L.decodeLenient (DBSCL.pack encodedFileName)))
+    decodeFileName encodedFileName = DBSCL.unpack $ Zlib.decompress $ Base64L.decodeLenient $ DBSCL.pack (replaceCharInString '-' '/' encodedFileName)
 
     -- | Hash filename.
     encodeFileName :: String -> String
-    encodeFileName text = replaceCharInString '/' '-' $  DBSCL.unpack (Base64L.encode (Zlib.compress (DBSCL.pack text)))
+    encodeFileName text = replaceCharInString '/' '-' $ DBSCL.unpack $ Base64L.encode $ Zlib.compress $ DBSCL.pack text
 
     getListFiles :: FilePath -> IO [(Int, String)]
     getListFiles direct = do
