@@ -7,7 +7,8 @@ module PageRank(computePageRank, main) where
     import           Data.Maybe  (fromJust)
     import           Prelude     hiding (lookup)
     import qualified Utils as Utils(decodeFileName, encodeFileName, getParseLinksPath, getParsePagerankPath)
-
+    import qualified Data.Time as DT(getCurrentTime)
+    
     type Node = Int
     type PRValue = Double
     type PageRank = Map Node PRValue
@@ -29,28 +30,27 @@ module PageRank(computePageRank, main) where
             go n v pr =
                 go (n-1) v $ insert (n-1) v pr
 
+    addAllNodes :: Int -> InboundEdges -> InboundEdges
+    addAllNodes n iEdges
+        | n < 0 = iEdges
+        | otherwise = addAllNodes (n-1) $ insertWith (\new old -> new ++ old) n [] iEdges
+
     postProcess :: (InboundEdges, OutboundEdges, Node) -> (InboundEdges, OutboundEdges)
     postProcess (iEdges, oEdges, maxNode) =
         let numNodes = maxNode + 1
             newIEdges = addAllNodes (numNodes-1) iEdges
-            in loop (numNodes-1) newIEdges oEdges
-
-        where
-            loop :: Int -> InboundEdges -> OutboundEdges -> (InboundEdges, OutboundEdges)
-            loop n iEdges oEdges
+            in loop (numNodes-1) newIEdges oEdges maxNode
+        where    
+            loop :: Int -> InboundEdges -> OutboundEdges -> Node -> (InboundEdges, OutboundEdges)
+            loop n iEdges oEdges maxNode
                 | n < 0 = (iEdges, oEdges)
                 | otherwise =
                     if member n oEdges then
-                        loop (n-1) iEdges oEdges
+                        loop (n-1) iEdges oEdges maxNode
                     else
                         let newOEdges = insert n (filter (/= n) [0..maxNode]) oEdges
                             newIEdges = mapWithKey (\k v -> if k /= n then v ++ [n] else v) iEdges
-                            in loop (n-1) newIEdges newOEdges
-            addAllNodes :: Int -> InboundEdges -> InboundEdges
-            addAllNodes n iEdges
-                | n < 0 = iEdges
-                | otherwise =
-                    addAllNodes (n-1) $ insertWith (\new old -> new ++ old) n [] iEdges
+                            in loop (n-1) newIEdges newOEdges maxNode
 
     getPareRankElemsArr :: [(Int, Int)] -> (InboundEdges, OutboundEdges, PageRank)
     getPareRankElemsArr arr =
@@ -59,16 +59,15 @@ module PageRank(computePageRank, main) where
             numNodes = size iEdges
             in (iEdges, oEdges, newPageRank numNodes)
 
+    plusNode :: [Node] -> [Node] -> [Node]
+    plusNode new_node old_node = new_node ++ old_node
+
     createtPageRankElem :: (InboundEdges, OutboundEdges, Node) -> (Int, Int) -> (InboundEdges, OutboundEdges, Node)
     createtPageRankElem (iEdges, oEdges, maxNode) docIdcomb =
         let (from, to) = (fst docIdcomb, snd docIdcomb)
             in (insertWith plusNode to [from] iEdges,
                 insertWith plusNode from [to] oEdges,
                 max to (max maxNode from))
-        where
-            plusNode :: [Node] -> [Node] -> [Node]
-            plusNode new_node old_node =
-                new_node ++ old_node
 
     loopProcess :: Int -> Double -> InboundEdges -> OutboundEdges -> PageRank -> PageRank
     loopProcess 0 _ _ _ pageRank = pageRank
@@ -98,8 +97,7 @@ module PageRank(computePageRank, main) where
 
     decodeFileNames :: [String] -> [String]
     decodeFileNames [] = []
-    decodeFileNames (x:xs) =
-        (Utils.decodeFileName x) : decodeFileNames xs
+    decodeFileNames (x:xs) = (Utils.decodeFileName x) : decodeFileNames xs
 
     getListOfFiles :: FilePath -> IO [(Int, String)]
     getListOfFiles path = do 
@@ -145,6 +143,7 @@ module PageRank(computePageRank, main) where
     dropInvalidValues [] = []
     dropInvalidValues (x:xs)
         | fst x /= -1  && snd x /= -1 = x : dropInvalidValues xs
+        | fst x == snd x              = dropInvalidValues xs
         | otherwise                   = dropInvalidValues xs
 
     returnCorrectPath :: String -> String
@@ -154,12 +153,20 @@ module PageRank(computePageRank, main) where
 
     computePageRank :: IO ()
     computePageRank = do
+        startTime <- DT.getCurrentTime
+        
+        putStr "-Starting Page Ranking at time : "
+        putStrLn $ show startTime
         let correctedFilePath = returnCorrectPath Utils.getParseLinksPath
-        putStrLn "Starting Page Ranking"
+        putStrLn "--Create list of files"
         let listOfFilesIO = getListOfFiles correctedFilePath
         listOfFiles <- listOfFilesIO
+        putStrLn "---Create list of (fromDocId, toDocid) combinations"
         let outputPageRankDataIO = getPageRankData ((length listOfFiles) - 1) listOfFiles correctedFilePath
         outputPageRankData <- outputPageRankDataIO
         let filteredPageRankData = dropInvalidValues outputPageRankData
-        writeFile Utils.getParsePagerankPath $ show $ toList $ process filteredPageRankData 2 0.85
-        putStrLn "Page ranking Ended"
+        putStrLn "----Computing Page Rank (This may take some time :D)"
+        writeFile Utils.getParsePagerankPath $ show $ toList $ process filteredPageRankData 1 0.85
+        endTime <- DT.getCurrentTime
+        putStr "-----Page ranking Ended at time : "
+        putStrLn $ show endTime
