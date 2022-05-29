@@ -9,7 +9,7 @@
 
 # Starting inicialization
 - cabal v2-repl app
-- initapp "pathToJLFile"
+- initApp "pathToJLFile"
 - searchText
 - "text"
 
