@@ -148,7 +148,8 @@ All notable changes to this project will be documented in this file.
 - Readme file
 
 
-[0.1.0]: https://github.com/xsivan/FP_haskell/compare/0.6.0...1.0.0
+[1.0.1]: https://github.com/xsivan/FP_haskell/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/xsivan/FP_haskell/compare/0.6.0...1.0.0
 [0.6.0]: https://github.com/xsivan/FP_haskell/compare/0.5.4...0.6.0
 [0.5.4]: https://github.com/xsivan/FP_haskell/compare/0.5.3...0.5.4
 [0.5.3]: https://github.com/xsivan/FP_haskell/compare/0.5.2...0.5.3
