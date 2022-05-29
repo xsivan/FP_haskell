@@ -1,4 +1,4 @@
-module PageRank(computePageRank) where
+module PageRank(computePageRank, main) where
     import System.IO
     import System.Directory
     import           Data.Map    (Map, empty, insert, insertWith, lookup,
@@ -13,6 +13,10 @@ module PageRank(computePageRank) where
     type PageRank = Map Node PRValue
     type InboundEdges = Map Node [Node]
     type OutboundEdges = InboundEdges
+
+    -- | Just for cabal, does nothing
+    main :: IO()
+    main = return ()
 
     newPageRank :: Int -> PageRank
     newPageRank n =

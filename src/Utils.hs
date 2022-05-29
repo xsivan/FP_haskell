@@ -1,6 +1,6 @@
 module Utils(
     decodeFileName, encodeFileName, getListFiles, getParsePath, getParseLinksPath, getParseWordsPath, getParseInvertedIndexPath, getParsePagerankPath, indexOf, indexOfReverse, lPadNumber, 
-    readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
+    main, readingList, recreateDir, removeSubString, subString, toLowerStringArr, toLowerString, uniqArr, validateFile, writeToFileUTF8
 ) where
     import qualified Codec.Compression.Zlib as Zlib(compress, decompress)
     import qualified Data.ByteString.Base64.Lazy as Base64L(decodeLenient, encode)
@@ -9,6 +9,10 @@ module Utils(
     import qualified Data.List as DL(drop, filter, isPrefixOf, isSuffixOf, replicate, reverse, tail, take)
     import qualified System.Directory as SD(createDirectoryIfMissing, doesFileExist, doesDirectoryExist, listDirectory, removeDirectoryRecursive)
     import qualified System.IO as IO(hClose, hPutStr, hSetEncoding, openFile, utf8, IOMode(WriteMode))
+
+    -- | Just for cabal, does nothing
+    main :: IO()
+    main = return ()
 
     -- | Decodes hashed file name.
     decodeFileName :: String -> String

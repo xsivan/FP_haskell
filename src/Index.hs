@@ -10,6 +10,9 @@ module Index where
     import Data.List.Split ( splitOn )
     import qualified Utils
 
+    -- | Just for cabal, does nothing
+    main :: IO()
+    main = return ()
     
     findArguments :: Eq a => [a] -> [a] -> Maybe Int
     findArguments search str = (search `isPrefixOf`) `findIndex` (tails str)  
