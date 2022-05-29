@@ -161,5 +161,5 @@ module PageRank(computePageRank, main) where
         let outputPageRankDataIO = getPageRankData ((length listOfFiles) - 1) listOfFiles correctedFilePath
         outputPageRankData <- outputPageRankDataIO
         let filteredPageRankData = dropInvalidValues outputPageRankData
-        writeFile Utils.getParsePagerankPath $ show $ toList $ process filteredPageRankData 10 0.85
+        writeFile Utils.getParsePagerankPath $ show $ toList $ process filteredPageRankData 2 0.85
         putStrLn "Page ranking Ended"

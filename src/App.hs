@@ -1,12 +1,18 @@
 module App (initApp, main, searchText) where
+    import qualified Control.Monad as CM(forever)
     import qualified Index(iindex)
     import qualified PageRank(computePageRank)
     import qualified Parser(parseJLFile)
     import qualified Utils(getParsePath, recreateDir, writeToFileUTF8, getParseInvertedIndexPath)
     
-    -- | Just for cabal, does nothing
+    -- | Main function of app
     main :: IO()
-    main = return ()
+    main = do 
+        putStrLn "\nZadajte cestu k JL súboru na parsovanie: "
+        path <- getLine
+        initApp path
+
+        CM.forever searchText
 
     -- | Parse file and initialize app for search. Format: initApp sourceJlFilePath.
     --

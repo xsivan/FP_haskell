@@ -53,7 +53,7 @@ module Index where
 
     readWord :: IO [String]
     readWord = do
-            putStrLn "googli"
+            putStrLn "\nZadajte výraz na vyhľadanie: "
             word <- getLine
             let new_word = lowercase word
             return (words new_word)
